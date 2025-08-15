@@ -1,5 +1,5 @@
 import click
-from migrator import MongoToMySQL, MongoToMongo , MySQLToMongo , MySQLToMySQL
+from .migrator import MongoToMySQL, MongoToMongo , MySQLToMongo , MySQLToMySQL
 
 @click.group()
 def main():
