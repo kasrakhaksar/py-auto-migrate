@@ -1,0 +1,5 @@
+pandas
+tqdm
+pymysql
+pymongo
+mysqlSaver
