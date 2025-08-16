@@ -2,7 +2,7 @@
   <strong>Py-Auto-Migrate</strong>
 </h1>
 <p align="center">
-  A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or MongoDB and MongoDB), with automatic table/database creation, existence checks, and support for full database migrations.
+  A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
   <br><br>
   <a href="https://github.com/kasrakhaksar/py-auto-migrate" target="_blank">
     <img src="https://img.shields.io/badge/GitHub-Repo-blue?logo=github" alt="GitHub" />
@@ -45,18 +45,29 @@ py-auto-migrate migrate --source <source_uri> --target <target_uri> --table <tab
 ## Example
 ```bash
 py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mongodb://localhost:27017/mydb2"
+```
+```bash
 py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysql://root:1234@localhost:3306/mydb" --table users
 ```
 
-<p>You can also use MongoDB → MongoDB or MySQL → MySQL</p>
+<p>You can also use MongoDB → MongoDB or PostgreSQL → PostgreSQL</p>
 
 ---
 
 
+## Database Support
+<ul>
+  <li>MySQL</li>
+  <li>MongoDB</li>
+  <li>PostgreSQL</li>
+</ul>
+
+
+---
+
 
 ## Future Plans
 <ul>
-
   <li>Add support for creating indexes on tables/collections to improve query performance.</li>
-  <li>Support for more databases: Add migrations for PostgreSQL, SQLite.</li>
+  <li>Support for more databases: Add migrations for SQLite.</li>
 </ul>
