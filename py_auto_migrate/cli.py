@@ -1,5 +1,5 @@
 import click
-from migrator import (
+from .migrator import (
     MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
     PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
     MySQLToPostgres, MongoToPostgres
