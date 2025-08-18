@@ -1,18 +1,18 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from pathlib import Path
 
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='py-auto-migrate',
-    version='0.0.7',
+    version='0.0.8',
     author='Kasra Khaksar',
     author_email='kasrakhaksar17@gmail.com',
     description='A Tool For Transferring Data, Tables, And Datasets Between Different Databases.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=['py_auto_migrate'],
+    packages=find_packages(include=["py_auto_migrate", "py_auto_migrate.*"]),
     python_requires='>=3.11',
     install_requires=[
         'pandas',
