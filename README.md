@@ -19,6 +19,20 @@
 pip install py-auto-migrate
 ```
 
+
+---
+
+
+## Help
+
+```bash
+py-auto-migrate --help
+```
+
+<p>This command displays a detailed guide on how to use the package, including available commands, arguments, and examples. It’s the best place to start if you want to quickly understand how to work with py-auto-migrate.</p>
+
+
+
 ---
 
 
@@ -69,5 +83,5 @@ py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysq
 ## Future Plans
 <ul>
   <li>Add support for creating indexes on tables/collections to improve query performance.</li>
-  <li>Support for more databases: Add migrations for SQLite.</li>
+  <li>Support for more databases: Add migrations for Oracle.</li>
 </ul>

@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import pandas as pd
+import sqlite3
 from .tools import map_dtype_to_postgres
 from .postgresql_model import PostgresConnection
 
@@ -68,6 +69,10 @@ class MongoToMySQL:
             port = 3306
         return host, port, user, password, db_name
 
+
+
+
+
 # ========== Mongo → Mongo ==========
 class MongoToMongo:
     def __init__(self, source_uri, target_uri):
@@ -75,33 +80,37 @@ class MongoToMongo:
         self.target_uri = target_uri
 
     def migrate_one(self, collection_name):
-        source_db = self._get_mongo_db(self.source_uri)
-        target_db = self._get_mongo_db(self.target_uri)
+        src_db = self._get_mongo_db(self.source_uri)
+        tgt_db = self._get_mongo_db(self.target_uri)
 
-        data = list(source_db[collection_name].find())
+        data = list(src_db[collection_name].find())
         if not data:
             print(f"❌ Collection '{collection_name}' in source MongoDB is empty.")
             return
 
-        if collection_name in target_db.list_collection_names():
+        if collection_name in tgt_db.list_collection_names():
             print(f"⚠ Collection '{collection_name}' already exists in target MongoDB. Skipping.")
             return
 
-        target_db[collection_name].insert_many(data)
-        print(f"✅ Migrated {len(data)} documents from '{collection_name}' to target MongoDB.")
+        tgt_db[collection_name].insert_many(data)
+        print(f"✅ Migrated {len(data)} documents from '{collection_name}'")
 
     def migrate_all(self):
-        source_db = self._get_mongo_db(self.source_uri)
-        collections = source_db.list_collection_names()
+        src_db = self._get_mongo_db(self.source_uri)
+        collections = src_db.list_collection_names()
         print(f"📦 Found {len(collections)} collections in source MongoDB")
+
         for col in collections:
             print(f"➡ Migrating collection: {col}")
             self.migrate_one(col)
 
-    def _get_mongo_db(self, mongo_uri):
-        client = MongoClient(mongo_uri)
-        db_name = mongo_uri.split("/")[-1]
+    def _get_mongo_db(self, uri):
+        client = MongoClient(uri)
+        db_name = uri.split("/")[-1]
         return client[db_name]
+
+
+
 
 # ========== Mongo → PostgreSQL ==========
 class MongoToPostgres:
@@ -163,3 +172,62 @@ class MongoToPostgres:
             host = host_port
             port = 5432
         return PostgresConnection.connect(host, port, user, password, db_name)
+    
+
+
+class MongoToSQLite:
+    def __init__(self, mongo_uri, sqlite_file):
+        self.mongo_uri = mongo_uri
+        self.sqlite_file = sqlite_file
+
+    def migrate_one(self, collection_name):
+        db = self._get_mongo_db(self.mongo_uri)
+        data = list(db[collection_name].find())
+        if not data:
+            print(f"❌ Collection '{collection_name}' in MongoDB is empty.")
+            return
+
+        # ایجاد DataFrame برای استخراج ستون‌ها و نوع‌ها
+        import pandas as pd
+        df = pd.DataFrame(data)
+        if "_id" in df.columns:
+            df["_id"] = df["_id"].astype(str)
+
+        conn_sqlite = sqlite3.connect(self.sqlite_file)
+        cursor = conn_sqlite.cursor()
+
+        # ساخت جدول SQLite در صورت نبود
+        columns = []
+        dtype_map = {
+            'int64': 'INTEGER',
+            'float64': 'REAL',
+            'object': 'TEXT',
+            'bool': 'BOOLEAN',
+            'datetime64[ns]': 'TEXT'
+        }
+        for col, dtype in df.dtypes.items():
+            col_type = dtype_map.get(str(dtype), 'TEXT')
+            columns.append(f'"{col}" {col_type}')
+        columns_str = ", ".join(columns)
+        cursor.execute(f'CREATE TABLE IF NOT EXISTS "{collection_name}" ({columns_str})')
+        conn_sqlite.commit()
+
+        # درج داده‌ها
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cursor.executemany(f'INSERT INTO "{collection_name}" VALUES ({placeholders})', df.values.tolist())
+        conn_sqlite.commit()
+        conn_sqlite.close()
+        print(f"✅ Migrated {len(df)} rows from MongoDB collection '{collection_name}' to SQLite")
+
+    def migrate_all(self):
+        db = self._get_mongo_db(self.mongo_uri)
+        collections = db.list_collection_names()
+        print(f"📦 Found {len(collections)} collections in MongoDB")
+        for col in collections:
+            print(f"➡ Migrating collection: {col}")
+            self.migrate_one(col)
+
+    def _get_mongo_db(self, mongo_uri):
+        client = MongoClient(mongo_uri)
+        db_name = mongo_uri.split("/")[-1]
+        return client[db_name]

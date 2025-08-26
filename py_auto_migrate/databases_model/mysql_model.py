@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import pandas as pd
+import sqlite3
 from .tools import map_dtype_to_postgres
 from .postgresql_model import PostgresConnection
 
@@ -204,3 +205,70 @@ class MySQLToPostgres:
             host = host_port
             port = 5432
         return PostgresConnection.connect(host, port, user, password, db_name)
+    
+
+
+
+class MySQLToSQLite:
+    def __init__(self, mysql_uri, sqlite_file):
+        self.mysql_uri = mysql_uri
+        self.sqlite_file = sqlite_file
+
+    def migrate_one(self, table_name):
+        host, port, user, password, db_name = self._parse_mysql_uri(self.mysql_uri)
+        conn_mysql = Connection.connect(host, port, user, password, db_name)
+        df = pd.read_sql(f'SELECT * FROM `{table_name}`', conn_mysql)
+        conn_mysql.close()
+
+        conn_sqlite = sqlite3.connect(self.sqlite_file)
+        cursor = conn_sqlite.cursor()
+
+        # ساخت جدول SQLite در صورت نبود
+        columns = []
+        dtype_map = {
+            'int32': 'INTEGER',
+            'int64': 'INTEGER',
+            'float64': 'REAL',
+            'object': 'TEXT',
+            'bool': 'BOOLEAN',
+            'datetime64[ns]': 'TEXT'
+        }
+        for col, dtype in df.dtypes.items():
+            col_type = dtype_map.get(str(dtype), 'TEXT')
+            columns.append(f'"{col}" {col_type}')
+        columns_str = ", ".join(columns)
+        cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_str})')
+        conn_sqlite.commit()
+
+        # درج داده‌ها
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cursor.executemany(f'INSERT INTO "{table_name}" VALUES ({placeholders})', df.values.tolist())
+        conn_sqlite.commit()
+        conn_sqlite.close()
+        print(f"✅ Migrated {len(df)} rows from MySQL to SQLite table '{table_name}'")
+
+    def migrate_all(self):
+        host, port, user, password, db_name = self._parse_mysql_uri(self.mysql_uri)
+        conn_mysql = Connection.connect(host, port, user, password, db_name)
+        cursor = conn_mysql.cursor()
+        cursor.execute("SHOW TABLES")
+        tables = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn_mysql.close()
+
+        for table in tables:
+            print(f"➡ Migrating MySQL table: {table}")
+            self.migrate_one(table)
+
+    def _parse_mysql_uri(self, mysql_uri):
+        mysql_uri = mysql_uri.replace("mysql://", "")
+        user_pass, host_db = mysql_uri.split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+            port = int(port)
+        else:
+            host = host_port
+            port = 3306
+        return host, port, user, password, db_name

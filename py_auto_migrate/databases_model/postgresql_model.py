@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import pandas as pd
 import psycopg2
+import sqlite3
 from .tools import map_dtype_to_postgres
 
 
@@ -226,6 +227,69 @@ class PostgresToPostgres:
 
         for table in tables:
             print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)
+
+    def _get_postgres_conn(self, pg_uri):
+        user_pass, host_db = pg_uri.replace("postgresql://", "").split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+            port = int(port)
+        else:
+            host = host_port
+            port = 5432
+        return PostgresConnection.connect(host, port, user, password, db_name)
+    
+
+
+class PostgresToSQLite:
+    def __init__(self, pg_uri, sqlite_file):
+        self.pg_uri = pg_uri
+        self.sqlite_file = sqlite_file
+
+    def migrate_one(self, table_name):
+        pg_conn = self._get_postgres_conn(self.pg_uri)
+        df = pd.read_sql(f'SELECT * FROM "{table_name}"', pg_conn)
+        pg_conn.close()
+
+        conn_sqlite = sqlite3.connect(self.sqlite_file)
+        cursor = conn_sqlite.cursor()
+
+        # ساخت جدول SQLite در صورت نبود
+        columns = []
+        dtype_map = {
+            'int32': 'INTEGER',
+            'int64': 'INTEGER',
+            'float64': 'REAL',
+            'object': 'TEXT',
+            'bool': 'BOOLEAN',
+            'datetime64[ns]': 'TEXT'
+        }
+        for col, dtype in df.dtypes.items():
+            col_type = dtype_map.get(str(dtype), 'TEXT')
+            columns.append(f'"{col}" {col_type}')
+        columns_str = ", ".join(columns)
+        cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_str})')
+        conn_sqlite.commit()
+
+        # درج داده‌ها
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cursor.executemany(f'INSERT INTO "{table_name}" VALUES ({placeholders})', df.values.tolist())
+        conn_sqlite.commit()
+        conn_sqlite.close()
+        print(f"✅ Migrated {len(df)} rows from PostgreSQL to SQLite table '{table_name}'")
+
+    def migrate_all(self):
+        pg_conn = self._get_postgres_conn(self.pg_uri)
+        cursor = pg_conn.cursor()
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+        tables = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        pg_conn.close()
+
+        for table in tables:
+            print(f"➡ Migrating PostgreSQL table: {table}")
             self.migrate_one(table)
 
     def _get_postgres_conn(self, pg_uri):
