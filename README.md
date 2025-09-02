@@ -1,8 +1,3 @@
-![GitHub Repo stars](https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=social)
-![GitHub forks](https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=social)
-![GitHub issues](https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate)
-
-
 <h1 align="center">
   <strong>Py-Auto-Migrate</strong>
 </h1>
