@@ -174,7 +174,7 @@ class MongoToPostgres:
         return PostgresConnection.connect(host, port, user, password, db_name)
     
 
-
+# ========== Mongo → SQLite ==========
 class MongoToSQLite:
     def __init__(self, mongo_uri, sqlite_file):
         self.mongo_uri = mongo_uri
@@ -187,7 +187,6 @@ class MongoToSQLite:
             print(f"❌ Collection '{collection_name}' in MongoDB is empty.")
             return
 
-        # ایجاد DataFrame برای استخراج ستون‌ها و نوع‌ها
         import pandas as pd
         df = pd.DataFrame(data)
         if "_id" in df.columns:
@@ -196,7 +195,6 @@ class MongoToSQLite:
         conn_sqlite = sqlite3.connect(self.sqlite_file)
         cursor = conn_sqlite.cursor()
 
-        # ساخت جدول SQLite در صورت نبود
         columns = []
         dtype_map = {
             'int64': 'INTEGER',
@@ -212,7 +210,6 @@ class MongoToSQLite:
         cursor.execute(f'CREATE TABLE IF NOT EXISTS "{collection_name}" ({columns_str})')
         conn_sqlite.commit()
 
-        # درج داده‌ها
         placeholders = ", ".join(["?"] * len(df.columns))
         cursor.executemany(f'INSERT INTO "{collection_name}" VALUES ({placeholders})', df.values.tolist())
         conn_sqlite.commit()

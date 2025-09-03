@@ -208,7 +208,7 @@ class MySQLToPostgres:
     
 
 
-
+# ========== MySQL → SQLite ==========
 class MySQLToSQLite:
     def __init__(self, mysql_uri, sqlite_file):
         self.mysql_uri = mysql_uri
@@ -223,7 +223,6 @@ class MySQLToSQLite:
         conn_sqlite = sqlite3.connect(self.sqlite_file)
         cursor = conn_sqlite.cursor()
 
-        # ساخت جدول SQLite در صورت نبود
         columns = []
         dtype_map = {
             'int32': 'INTEGER',
@@ -240,7 +239,6 @@ class MySQLToSQLite:
         cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_str})')
         conn_sqlite.commit()
 
-        # درج داده‌ها
         placeholders = ", ".join(["?"] * len(df.columns))
         cursor.executemany(f'INSERT INTO "{table_name}" VALUES ({placeholders})', df.values.tolist())
         conn_sqlite.commit()

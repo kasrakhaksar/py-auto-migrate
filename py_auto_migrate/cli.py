@@ -1,11 +1,30 @@
 import click
-from .migrator import (
-    MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
-    PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
-    MySQLToPostgres, MongoToPostgres, MongoToSQLite , MySQLToSQLite ,PostgresToSQLite ,
-    SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite
-)
 
+try:
+    from .migrator import (
+        MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
+        PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
+        MySQLToPostgres, MongoToPostgres,
+        MongoToSQLite, MySQLToSQLite, PostgresToSQLite,
+        SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite
+    )
+except ImportError:
+    try:
+        from py_auto_migrate.migrator import (
+            MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
+            PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
+            MySQLToPostgres, MongoToPostgres,
+            MongoToSQLite, MySQLToSQLite, PostgresToSQLite,
+            SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite
+        )
+    except ImportError:
+        from migrator import (
+            MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
+            PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
+            MySQLToPostgres, MongoToPostgres,
+            MongoToSQLite, MySQLToSQLite, PostgresToSQLite,
+            SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite
+        )
 
 
 @click.group(help="""
@@ -117,10 +136,9 @@ def migrate(source, target, table):
         m = SQLiteToSQLite(source.replace("sqlite:///", ""), target.replace("sqlite:///", ""))
 
     else:
-        click.echo("❌ Migration type not supported yet / نوع مهاجرت پشتیبانی نمی‌شود.")
+        click.echo("❌ Migration type not supported yet.")
         return
 
-    # Run migration
     if table:
         m.migrate_one(table)
     else:

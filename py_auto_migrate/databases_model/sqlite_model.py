@@ -20,7 +20,6 @@ class SQLiteToMySQL:
 
         host, port, user, password, db_name = self._parse_mysql_uri(self.mysql_uri)
 
-        # Create database if not exists
         temp_conn = Connection.connect(host, port, user, password, None)
         creator = Creator(temp_conn)
         creator.database_creator(db_name)
@@ -84,7 +83,6 @@ class SQLiteToPostgres:
             host = host_port
             port = 5432
 
-        # Connect to PostgreSQL
         pg_conn = PostgresConnection.connect(host, port, user, password, db_name)
 
         cursor = pg_conn.cursor()
@@ -95,7 +93,6 @@ class SQLiteToPostgres:
             pg_conn.close()
             return
 
-        # Create table and insert
         columns = ", ".join([f'"{col}" TEXT' for col in df.columns])
         cursor.execute(f'CREATE TABLE "{table_name}" ({columns})')
         pg_conn.commit()
