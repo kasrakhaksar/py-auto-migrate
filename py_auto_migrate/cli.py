@@ -44,10 +44,10 @@ SQLite:
 Usage:
 
 ⚡Migrate all tables/collections:
-    python cli.py migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db"
+    py-auto-migrate migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db"
 
 ⚡Migrate a single table/collection:
-    python cli.py migrate --source "mongodb://localhost:27017/db" --target "postgresql://user:pass@localhost:5432/db" --table "my_collection"
+    py-auto-migrate migrate --source "mongodb://localhost:27017/db" --target "postgresql://user:pass@localhost:5432/db" --table "my_collection"
              
 
 """
