@@ -1,5 +1,5 @@
 <h1 align="center">
-  <strong>Py-Auto-Migrate</strong>
+  <strong>𝐏𝐲-𝐀𝐮𝐭𝐨-𝐌𝐢𝐠𝐫𝐚𝐭𝐞</strong>
 </h1>
 <p align="center">
   A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
