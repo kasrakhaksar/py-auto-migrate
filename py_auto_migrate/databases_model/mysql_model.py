@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import pandas as pd
 import sqlite3
+import os
 from .tools import map_dtype_to_postgres
 from .postgresql_model import PostgresConnection
 
@@ -212,7 +213,13 @@ class MySQLToPostgres:
 class MySQLToSQLite:
     def __init__(self, mysql_uri, sqlite_file):
         self.mysql_uri = mysql_uri
-        self.sqlite_file = sqlite_file
+        self.sqlite_file = self._prepare_sqlite_file(sqlite_file)
+
+    def _prepare_sqlite_file(self, file_path):
+        if file_path.startswith("sqlite:///"):
+            file_path = file_path.replace("sqlite:///", "", 1)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        return file_path
 
     def migrate_one(self, table_name):
         host, port, user, password, db_name = self._parse_mysql_uri(self.mysql_uri)

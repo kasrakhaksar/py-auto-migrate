@@ -3,6 +3,7 @@ from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import pandas as pd
 import psycopg2
 import sqlite3
+import os
 from .tools import map_dtype_to_postgres
 
 
@@ -244,7 +245,13 @@ class PostgresToPostgres:
 class PostgresToSQLite:
     def __init__(self, pg_uri, sqlite_file):
         self.pg_uri = pg_uri
-        self.sqlite_file = sqlite_file
+        self.sqlite_file = self._prepare_sqlite_file(sqlite_file)
+
+    def _prepare_sqlite_file(self, file_path):
+        if file_path.startswith("sqlite:///"):
+            file_path = file_path.replace("sqlite:///", "", 1)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        return file_path
 
     def migrate_one(self, table_name):
         pg_conn = self._get_postgres_conn(self.pg_uri)
