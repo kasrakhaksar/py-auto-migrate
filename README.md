@@ -20,7 +20,9 @@ pip install py-auto-migrate
 ```
 
 
-If you don’t have Python, or you want to use it with the CLI, you can download the dedicated py-auto-migrate CLI from the releases on GitHub.
+## Download CLI 
+
+If you don’t have Python, or you want to use it with the CLI, you can download the dedicated <b>Py-Auto-Migrate CLI</b> from the <b>CLI</b> folder on GitHub repository.
 
 
 ---
