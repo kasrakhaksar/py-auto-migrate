@@ -6,7 +6,7 @@ from py_auto_migrate.cli import migrate
 
 def repl():
     print("🚀 Welcome to Py-Auto-Migrate Shell")
-    print("Type 'help' for usage, 'cls' to clear screen, or 'exit' to quit.\n")
+    print("Type 'help' for usage, or 'exit' to quit.\n")
 
     while True:
         try:
