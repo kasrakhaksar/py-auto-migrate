@@ -38,7 +38,10 @@ class BaseMongo:
             return pd.DataFrame()
         df = pd.DataFrame(data)
         if "_id" in df.columns:
-            df["_id"] = df["_id"].astype(str)
+            df = df.drop(columns="_id")
+
+
+        df = df.fillna(0)
         return df
 
 
@@ -191,3 +194,60 @@ class MongoToMongo(BaseMongo):
         for col in self.get_collections():
             print(f"➡ Migrating collection: {col}")
             self.migrate_one(col)
+
+
+
+
+# ========= Mongo → MariaDB =========
+class MongoToMaria(BaseMongo):
+    def __init__(self, mongo_uri, maria_uri, mongo_target_uri=None):
+        super().__init__(mongo_uri)
+        self.maria_uri = maria_uri
+        self.mongo_target_uri = mongo_target_uri
+
+    def migrate_one(self, collection_name):
+        df = self.read_collection(collection_name)
+        if df.empty:
+            return
+
+        host, port, user, password, db_name = self._parse_maria_uri(self.maria_uri)
+        temp_conn = Connection.connect(host, port, user, password, None)
+        creator = Creator(temp_conn)
+        creator.database_creator(db_name)
+        temp_conn.close()
+
+        conn = Connection.connect(host, port, user, password, db_name)
+        checker = CheckerAndReceiver(conn)
+        if checker.table_exist(collection_name):
+            print(f"⚠ Table '{collection_name}' already exists in MariaDB. Skipping Maria save.")
+        else:
+            saver = Saver(conn)
+            saver.sql_saver(df, collection_name)
+            print(f"✅ Saved {len(df)} rows to MariaDB table '{collection_name}'")
+        conn.close()
+
+        if self.mongo_target_uri:
+            target_db = MongoClient(self.mongo_target_uri)[self.mongo_target_uri.split("/")[-1]]
+            if collection_name in target_db.list_collection_names():
+                print(f"⚠ Collection '{collection_name}' already exists in target MongoDB. Skipping Mongo save.")
+            else:
+                target_db[collection_name].insert_many(df.to_dict("records"))
+                print(f"✅ Also saved {len(df)} rows to target MongoDB collection '{collection_name}'")
+
+    def migrate_all(self):
+        for col in self.get_collections():
+            print(f"➡ Migrating collection: {col}")
+            self.migrate_one(col)
+
+    def _parse_maria_uri(self, maria_uri):
+        maria_uri = maria_uri.replace("mariadb://", "").replace("mysql://", "")
+        user_pass, host_db = maria_uri.split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+            port = int(port)
+        else:
+            host = host_port
+            port = 3309
+        return host, port, user, password, db_name

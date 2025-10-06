@@ -27,6 +27,8 @@ class BaseSQLite:
         conn.close()
         if df.empty:
             print(f"❌ Table '{table_name}' is empty.")
+
+        df = df.fillna(0)
         return df
 
 
@@ -187,3 +189,54 @@ class SQLiteToPostgres(BaseSQLite):
         for table in self.get_tables():
             print(f"➡ Migrating table: {table}")
             self.migrate_one(table)
+
+
+
+# ========= SQLite → MariaDB =========
+class SQLiteToMaria(BaseSQLite):
+    def __init__(self, sqlite_path, maria_uri):
+        super().__init__(sqlite_path)
+        self.maria_uri = maria_uri
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if df.empty:
+            return
+
+        host, port, user, password, db_name = self._parse_maria_uri(self.maria_uri)
+
+        temp_conn = Connection.connect(host, port, user, password, None)
+        creator = Creator(temp_conn)
+        creator.database_creator(db_name)
+        temp_conn.close()
+
+        conn = Connection.connect(host, port, user, password, db_name)
+        checker = CheckerAndReceiver(conn)
+
+        if checker.table_exist(table_name):
+            print(f"⚠ Table '{table_name}' already exists in MariaDB. Skipping migration.")
+            conn.close()
+            return
+
+        saver = Saver(conn)
+        saver.sql_saver(df, table_name)
+        conn.close()
+        print(f"✅ Migrated {len(df)} rows from SQLite to MariaDB table '{table_name}'")
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)
+
+    def _parse_maria_uri(self, maria_uri):
+        maria_uri = maria_uri.replace("mariadb://", "").replace("mysql://", "")
+        user_pass, host_db = maria_uri.split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+            port = int(port)
+        else:
+            host = host_port
+            port = 3306
+        return host, port, user, password, db_name
