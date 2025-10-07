@@ -3,11 +3,38 @@
 </h1>
 <p align="center">
   A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
-  <br><br>
+</p>
+<p align="center">
+  <a href="https://pypi.org/project/py-auto-migrate/" target="_blank">
+    <img src="https://img.shields.io/badge/PyPI-Package-blue?logo=pypi" alt="PyPI" />
+  </a>
+
   <a href="https://github.com/kasrakhaksar/py-auto-migrate" target="_blank">
     <img src="https://img.shields.io/badge/GitHub-Repo-blue?logo=github" alt="GitHub" />
   </a>
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/stargazers" target="_blank">
+    <img src="https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Stars" />
+  </a>
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/network/members" target="_blank">
+    <img src="https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Forks" />
+  </a>
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/issues" target="_blank">
+    <img src="https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Issues" />
+  </a>
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/pulls" target="_blank">
+    <img src="https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Pull Requests" />
+  </a>
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases" target="_blank">
+    <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Releases" />
+  </a>
+
 </p>
+
 
 
 
@@ -24,6 +51,9 @@ pip install py-auto-migrate
 
 If you don’t have Python, or you want to use it with the CLI (Shell), you can download the dedicated <b>PAM-CLI</b> from the <b>Releases</b> on GitHub epository.
 
+<a href="https://github.com/kasrakhaksar/py-auto-migrate/releases" target="_blank">
+  <img src="https://img.shields.io/badge/-Release-blue?logo=github" />
+</a>
 
 ---
 
