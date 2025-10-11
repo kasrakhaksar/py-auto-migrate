@@ -6,29 +6,16 @@
   A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
 </p>
 
-<p align="center">
-  <a href="https://pypi.org/project/py-auto-migrate/">
-    <img src="https://img.shields.io/badge/PyPI-Package-blue?logo=pypi" alt="PyPI" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate">
-    <img src="https://img.shields.io/badge/GitHub-Repo-blue?logo=github" alt="GitHub" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate/stargazers">
-    <img src="https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Stars" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate/network/members">
-    <img src="https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Forks" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate/issues">
-    <img src="https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Issues" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate/pulls">
-    <img src="https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Pull Requests" " />
-  </a>
-  <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases">
-    <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Releases" " />
-  </a>
-</p>
+
+<div align="center">
+  [![PyPI](https://img.shields.io/badge/PyPI-Package-blue?logo=pypi)](https://pypi.org/project/py-auto-migrate/)
+  [![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/kasrakhaksar/py-auto-migrate)
+  [![Stars](https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/stargazers)
+  [![Forks](https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/network/members)
+  [![Issues](https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/issues)
+  [![Pull Requests](https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/pulls)
+  [![Releases](https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/releases)
+</div>
 
 
 
