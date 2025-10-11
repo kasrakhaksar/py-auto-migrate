@@ -7,15 +7,46 @@
 </p>
 
 
-<div align="center">
-  [![PyPI](https://img.shields.io/badge/PyPI-Package-blue?logo=pypi)](https://pypi.org/project/py-auto-migrate/)
-  [![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/kasrakhaksar/py-auto-migrate)
-  [![Stars](https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/stargazers)
-  [![Forks](https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/network/members)
-  [![Issues](https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/issues)
-  [![Pull Requests](https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/pulls)
-  [![Releases](https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/releases)
-</div>
+
+<table align="center">
+  <tr>
+    <td>
+      <a href="https://pypi.org/project/py-auto-migrate/">
+        <img src="https://img.shields.io/badge/PyPI-Package-blue?logo=pypi" alt="PyPI">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate">
+        <img src="https://img.shields.io/badge/GitHub-Repo-blue?logo=github" alt="GitHub">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate/stargazers">
+        <img src="https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Stars">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate/network/members">
+        <img src="https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Forks">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate/issues">
+        <img src="https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Issues">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate/pulls">
+        <img src="https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Pull Requests">
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases">
+        <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Releases">
+      </a>
+    </td>
+  </tr>
+</table>
 
 
 
