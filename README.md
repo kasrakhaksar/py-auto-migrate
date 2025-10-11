@@ -4,7 +4,8 @@
 <p align="center">
   A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
 </p>
-<p align="center">
+
+<div align="center" style="line-height:0;">
   <a href="https://pypi.org/project/py-auto-migrate/" target="_blank">
     <img src="https://img.shields.io/badge/PyPI-Package-blue?logo=pypi" alt="PyPI" />
   </a>
@@ -32,8 +33,8 @@
   <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases" target="_blank">
     <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square" alt="Releases" />
   </a>
+</div>
 
-</p>
 
 
 
