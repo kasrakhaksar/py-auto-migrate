@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 from pymongo import MongoClient
 import psycopg2
+import pyodbc
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 from .tools import map_dtype_to_postgres
 
@@ -251,3 +252,97 @@ class MongoToMaria(BaseMongo):
             host = host_port
             port = 3309
         return host, port, user, password, db_name
+
+
+# ========= Mongo → SQL Server =========
+class MongoToSQLServer:
+    def __init__(self, mongo_uri, mssql_uri):
+        self.mongo_uri = mongo_uri
+        self.mssql_uri = mssql_uri
+
+    def _parse_mssql_uri(self, uri):
+        uri = uri.replace("mssql://", "")
+        if uri.startswith("@") or "@" not in uri:
+            if uri.startswith("@"):
+                uri = uri[1:]
+            host_port, db_name = uri.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {"auth": "windows", "host": host, "port": port, "database": db_name}
+        else:
+            user_pass, host_db = uri.split("@", 1)
+            user, password = user_pass.split(":", 1)
+            host_port, db_name = host_db.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {
+                "auth": "sql",
+                "host": host,
+                "port": port,
+                "database": db_name,
+                "user": user,
+                "password": password
+            }
+
+    def _connect_mssql(self, create_db=False):
+        cfg = self._parse_mssql_uri(self.mssql_uri)
+        if cfg["auth"] == "windows":
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};Trusted_Connection=yes;"
+        else:
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};UID={cfg['user']};PWD={cfg['password']};"
+
+        if create_db:
+            with pyodbc.connect(conn_str, autocommit=True) as tmp:
+                cur = tmp.cursor()
+                cur.execute(f"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name='{cfg['database']}') CREATE DATABASE [{cfg['database']}]")
+                cur.close()
+
+        conn_str += f"DATABASE={cfg['database']};"
+        return pyodbc.connect(conn_str)
+
+    def migrate_one(self, collection_name):
+        client = MongoClient(self.mongo_uri)
+        db_name = self.mongo_uri.split("/")[-1]
+        db = client[db_name]
+        coll = db[collection_name]
+        data = list(coll.find())
+
+        if not data:
+            print(f"⚠ Collection '{collection_name}' is empty.")
+            return
+
+        df = pd.DataFrame(data).drop(columns=["_id"], errors="ignore")
+
+        conn = self._connect_mssql(create_db=True)
+        cur = conn.cursor()
+
+        dtype_map = {
+            "int64": "BIGINT",
+            "float64": "FLOAT",
+            "object": "NVARCHAR(MAX)",
+            "bool": "BIT",
+            "datetime64[ns]": "DATETIME"
+        }
+
+        columns = ", ".join([f"[{col}] {dtype_map.get(str(dtype), 'NVARCHAR(MAX)')}" for col, dtype in df.dtypes.items()])
+        cur.execute(f"IF OBJECT_ID('{collection_name}', 'U') IS NULL CREATE TABLE [{collection_name}] ({columns})")
+        conn.commit()
+
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cur.fast_executemany = True
+        cur.executemany(f"INSERT INTO [{collection_name}] VALUES ({placeholders})", df.values.tolist())
+        conn.commit()
+        conn.close()
+        print(f"✅ Migrated {len(df)} rows from Mongo '{collection_name}' to SQL Server.")
+
+    def migrate_all(self):
+        client = MongoClient(self.mongo_uri)
+        db_name = self.mongo_uri.split("/")[-1]
+        db = client[db_name]
+        for coll_name in db.list_collection_names():
+            print(f"➡ Migrating collection: {coll_name}")
+            self.migrate_one(coll_name)

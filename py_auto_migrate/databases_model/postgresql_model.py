@@ -1,6 +1,7 @@
 import pandas as pd
 import sqlite3
 import os
+import pyodbc
 from pymongo import MongoClient
 import psycopg2
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
@@ -278,3 +279,109 @@ class PostgresToMaria(BasePostgres):
             host = host_port
             port = 3306
         return host, port, user, password, db_name
+
+
+
+
+# ========= Postgres → SQL Server =========
+class PostgresToSQLServer:
+    def __init__(self, pg_uri, mssql_uri):
+        self.pg_uri = pg_uri
+        self.mssql_uri = mssql_uri
+
+    def _parse_mssql_uri(self, uri):
+        uri = uri.replace("mssql://", "")
+        if uri.startswith("@") or "@" not in uri:
+            if uri.startswith("@"):
+                uri = uri[1:]
+            host_port, db_name = uri.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {"auth": "windows", "host": host, "port": port, "database": db_name}
+        else:
+            user_pass, host_db = uri.split("@", 1)
+            user, password = user_pass.split(":", 1)
+            host_port, db_name = host_db.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {
+                "auth": "sql",
+                "host": host,
+                "port": port,
+                "database": db_name,
+                "user": user,
+                "password": password
+            }
+
+    def _connect_postgres(self):
+        uri = self.pg_uri.replace("postgresql://", "")
+        user_pass, host_db = uri.split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+        else:
+            host, port = host_port, 5432
+        return psycopg2.connect(dbname=db_name, user=user, password=password, host=host, port=port)
+
+    def _connect_mssql(self, create_db=False):
+        cfg = self._parse_mssql_uri(self.mssql_uri)
+        if cfg["auth"] == "windows":
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};Trusted_Connection=yes;"
+        else:
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};UID={cfg['user']};PWD={cfg['password']};"
+
+        if create_db:
+            with pyodbc.connect(conn_str, autocommit=True) as tmp:
+                cur = tmp.cursor()
+                cur.execute(f"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name='{cfg['database']}') CREATE DATABASE [{cfg['database']}]")
+                cur.close()
+
+        conn_str += f"DATABASE={cfg['database']};"
+        return pyodbc.connect(conn_str)
+
+    def migrate_one(self, table_name):
+        pg_conn = self._connect_postgres()
+        df = pd.read_sql(f"SELECT * FROM {table_name}", pg_conn)
+        pg_conn.close()
+
+        if df.empty:
+            print(f"⚠ Table '{table_name}' is empty.")
+            return
+
+        conn = self._connect_mssql(create_db=True)
+        cur = conn.cursor()
+
+        dtype_map = {
+            "int64": "BIGINT",
+            "float64": "FLOAT",
+            "object": "NVARCHAR(MAX)",
+            "bool": "BIT",
+            "datetime64[ns]": "DATETIME"
+        }
+
+        columns = ", ".join([f"[{col}] {dtype_map.get(str(dtype), 'NVARCHAR(MAX)')}" for col, dtype in df.dtypes.items()])
+        cur.execute(f"IF OBJECT_ID('{table_name}', 'U') IS NULL CREATE TABLE [{table_name}] ({columns})")
+        conn.commit()
+
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cur.fast_executemany = True
+        cur.executemany(f"INSERT INTO [{table_name}] VALUES ({placeholders})", df.values.tolist())
+        conn.commit()
+        conn.close()
+        print(f"✅ Migrated {len(df)} rows from PostgreSQL '{table_name}' to SQL Server.")
+
+    def migrate_all(self):
+        pg_conn = self._connect_postgres()
+        cur = pg_conn.cursor()
+        cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+        tables = [r[0] for r in cur.fetchall()]
+        pg_conn.close()
+
+        for table in tables:
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)

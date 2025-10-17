@@ -4,7 +4,10 @@ import os
 from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 import psycopg2
+import pyodbc
 from .tools import map_dtype_to_postgres
+
+
 
 # ========= Base MySQL =========
 class BaseMySQL:
@@ -275,3 +278,115 @@ class MySQLToMaria(BaseMySQL):
             host = host_port
             port = 3309
         return host, port, user, password, db_name
+
+
+
+
+# ========= MySQL → SQL Server =========
+class MySQLToSQLServer(BaseMySQL):
+    def __init__(self, mysql_uri, mssql_uri):
+        super().__init__(mysql_uri)
+        self.mssql_uri = mssql_uri
+
+    def _parse_mssql_uri(self, uri):
+        uri = uri.replace("mssql://", "")
+        if uri.startswith("@") or "@" not in uri:
+            if uri.startswith("@"):
+                uri = uri[1:]
+            host_port, db_name = uri.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {
+                "auth": "windows",
+                "host": host,
+                "port": port,
+                "database": db_name
+            }
+        else:
+            user_pass, host_db = uri.split("@", 1)
+            user, password = user_pass.split(":", 1)
+            host_port, db_name = host_db.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {
+                "auth": "sql",
+                "host": host,
+                "port": port,
+                "database": db_name,
+                "user": user,
+                "password": password
+            }
+
+    def _connect_mssql(self, db_name=None, create_db=False):
+        cfg = self._parse_mssql_uri(self.mssql_uri)
+        database = db_name or cfg["database"]
+
+        if cfg["auth"] == "windows":
+            conn_str = (
+                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                f"SERVER={cfg['host']},{cfg['port']};"
+                f"Trusted_Connection=yes;"
+            )
+        else:
+            conn_str = (
+                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                f"SERVER={cfg['host']},{cfg['port']};"
+                f"UID={cfg['user']};PWD={cfg['password']};"
+            )
+
+        if create_db:
+            with pyodbc.connect(conn_str, autocommit=True) as tmp_conn:
+                cursor = tmp_conn.cursor()
+                cursor.execute(f"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{database}') CREATE DATABASE [{database}]")
+                cursor.close()
+
+        conn_str += f"DATABASE={database};"
+        return pyodbc.connect(conn_str)
+
+    def migrate_one(self, table_name):
+        try:
+            df = self.read_table(table_name)
+            if df.empty:
+                return
+
+            conn = self._connect_mssql(create_db=True)
+            cursor = conn.cursor()
+
+            cursor.execute(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{table_name}'")
+            if cursor.fetchone()[0] > 0:
+                print(f"⚠ Table '{table_name}' already exists in SQL Server. Skipping.")
+                conn.close()
+                return
+
+            dtype_map = {
+                'int64': 'BIGINT',
+                'int32': 'INT',
+                'float64': 'FLOAT',
+                'object': 'NVARCHAR(MAX)',
+                'bool': 'BIT',
+                'datetime64[ns]': 'DATETIME'
+            }
+            columns_sql = ", ".join([f"[{c}] {dtype_map.get(str(t), 'NVARCHAR(MAX)')}" for c, t in df.dtypes.items()])
+            cursor.execute(f"CREATE TABLE [{table_name}] ({columns_sql})")
+            conn.commit()
+
+            placeholders = ", ".join(["?"] * len(df.columns))
+            insert_sql = f"INSERT INTO [{table_name}] VALUES ({placeholders})"
+            cursor.fast_executemany = True
+            cursor.executemany(insert_sql, df.values.tolist())
+            conn.commit()
+            conn.close()
+
+            print(f"✅ Migrated {len(df)} rows from MySQL '{table_name}' to SQL Server '{table_name}'")
+
+        except Exception as e:
+            print(f"⚠ Error: {e}")
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)

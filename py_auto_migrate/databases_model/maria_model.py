@@ -2,6 +2,8 @@ import pandas as pd
 import sqlite3
 import os
 import psycopg2
+import pymysql
+import pyodbc
 from pymongo import MongoClient
 from mysqlSaver import Connection, Saver, CheckerAndReceiver, Creator
 from .tools import map_dtype_to_postgres
@@ -230,4 +232,118 @@ class MariaToMaria(BaseMaria):
     def migrate_all(self):
         for table in self.get_tables():
             print(f"➡ Migrating MariaDB table: {table}")
+            self.migrate_one(table)
+
+
+
+
+# ========= MariaDB → SQL Server =========
+class MariaToSQLServer:
+    def __init__(self, maria_uri, mssql_uri):
+        self.maria_uri = maria_uri
+        self.mssql_uri = mssql_uri
+
+    def _parse_maria_uri(self, uri):
+        uri = uri.replace("mariadb://", "")
+        user_pass, host_db = uri.split("@")
+        user, password = user_pass.split(":")
+        host_port, db_name = host_db.split("/")
+        if ":" in host_port:
+            host, port = host_port.split(":")
+            port = int(port)
+        else:
+            host = host_port
+            port = 3306
+        return host, port, user, password, db_name
+
+    def _parse_mssql_uri(self, uri):
+        uri = uri.replace("mssql://", "")
+        if uri.startswith("@") or "@" not in uri:
+            if uri.startswith("@"):
+                uri = uri[1:]
+            host_port, db_name = uri.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {"auth": "windows", "host": host, "port": port, "database": db_name}
+        else:
+            user_pass, host_db = uri.split("@", 1)
+            user, password = user_pass.split(":", 1)
+            host_port, db_name = host_db.split("/", 1)
+            if ":" in host_port:
+                host, port = host_port.split(":")
+            else:
+                host, port = host_port, "1433"
+            return {
+                "auth": "sql",
+                "host": host,
+                "port": port,
+                "database": db_name,
+                "user": user,
+                "password": password
+            }
+
+    def _connect_maria(self):
+        host, port, user, password, db = self._parse_maria_uri(self.maria_uri)
+        return pymysql.connect(host=host, port=port, user=user, password=password, database=db)
+
+    def _connect_mssql(self, create_db=False):
+        cfg = self._parse_mssql_uri(self.mssql_uri)
+        if cfg["auth"] == "windows":
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};Trusted_Connection=yes;"
+        else:
+            conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={cfg['host']},{cfg['port']};UID={cfg['user']};PWD={cfg['password']};"
+
+        if create_db:
+            with pyodbc.connect(conn_str, autocommit=True) as tmp:
+                cur = tmp.cursor()
+                cur.execute(f"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name='{cfg['database']}') CREATE DATABASE [{cfg['database']}]")
+                cur.close()
+
+        conn_str += f"DATABASE={cfg['database']};"
+        return pyodbc.connect(conn_str)
+
+    def get_tables(self):
+        conn = self._connect_maria()
+        cur = conn.cursor()
+        cur.execute("SHOW TABLES")
+        tables = [r[0] for r in cur.fetchall()]
+        conn.close()
+        return tables
+
+    def migrate_one(self, table_name):
+        conn_maria = self._connect_maria()
+        df = pd.read_sql(f"SELECT * FROM `{table_name}`", conn_maria)
+        conn_maria.close()
+
+        if df.empty:
+            print(f"⚠ Table '{table_name}' is empty.")
+            return
+
+        conn_mssql = self._connect_mssql(create_db=True)
+        cur = conn_mssql.cursor()
+
+        dtype_map = {
+            "int64": "BIGINT",
+            "float64": "FLOAT",
+            "object": "NVARCHAR(MAX)",
+            "bool": "BIT",
+            "datetime64[ns]": "DATETIME"
+        }
+
+        columns = ", ".join([f"[{col}] {dtype_map.get(str(dtype), 'NVARCHAR(MAX)')}" for col, dtype in df.dtypes.items()])
+        cur.execute(f"IF OBJECT_ID('{table_name}', 'U') IS NULL CREATE TABLE [{table_name}] ({columns})")
+        conn_mssql.commit()
+
+        placeholders = ", ".join(["?"] * len(df.columns))
+        cur.fast_executemany = True
+        cur.executemany(f"INSERT INTO [{table_name}] VALUES ({placeholders})", df.values.tolist())
+        conn_mssql.commit()
+        conn_mssql.close()
+        print(f"✅ Migrated {len(df)} rows from MariaDB '{table_name}' to SQL Server.")
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
             self.migrate_one(table)

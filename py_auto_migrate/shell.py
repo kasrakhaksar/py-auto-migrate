@@ -32,12 +32,10 @@ def repl():
             if not cmd:
                 continue
 
-            # ==== Exit ====
             if cmd in ["exit", "quit"]:
                 console.print("👋 [info]Exiting Py-Auto-Migrate.[/info]")
                 break
 
-            # ==== Help ====
             if cmd == "help":
                 console.print("""
 [bold cyan]Py-Auto-Migrate Interactive Shell[/bold cyan]
@@ -50,6 +48,7 @@ This shell allows you to migrate data between different databases interactively.
   • MySQL
   • MariaDB
   • PostgreSQL
+  • SQL Server
   • SQLite
 
 [bold green]Available Commands:[/bold green]
@@ -61,61 +60,50 @@ This shell allows you to migrate data between different databases interactively.
   [command]exit[/command] or [command]quit[/command]
       → Exit the interactive shell.
 
+                              
 [bold green]Connection URI Examples:[/bold green]
   PostgreSQL:
     postgresql://<user>:<password>@<host>:<port>/<database>
-    Example:
-      postgresql://postgres:1234@localhost:5432/testdb
 
   MySQL:
     mysql://<user>:<password>@<host>:<port>/<database>
-    Example:
-      mysql://root:1234@localhost:3306/testdb
 
   MariaDB:
     mariadb://<user>:<password>@<host>:<port>/<database>
-    Example:
-      mariadb://root:1234@localhost:3306/mydb
 
   MongoDB:
     mongodb://<host>:<port>/<database>
-    Example:
-      mongodb://localhost:27017/testdb
-
+                              
+  SQL Server (SQL Auth):
+    mssql://<user>:<password>@<host>:<port>/<database>
+  SQL Server (Windows Auth):
+    mssql://@<host>:<port>/<database>
+                  
   SQLite:
     sqlite:///<path_to_sqlite_file>
-    Example:
-      sqlite:///C:/databases/mydb.sqlite
 
+                              
 [bold green]Usage Examples:[/bold green]
   ➤ Migrate entire database:
     [command]migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db"[/command]
 
-  ➤ Migrate from MariaDB to MongoDB:
-    [command]migrate --source "mariadb://root:1234@localhost:3306/source_db" --target "mongodb://localhost:27017/target_db"[/command]
-
   ➤ Migrate one table only:
-    [command]migrate --source "sqlite:///C:/data/mydb.sqlite" --target "postgresql://user:pass@localhost:5432/db" --table "customers"[/command]
+    [command]migrate --source "sqlite:///C:/data/mydb.sqlite" --target "postgresql://user:pass@localhost:5432/db" --table customers[/command]
 
-  ➤ Migrate from MongoDB to SQLite:
-    [command]migrate --source "mongodb://localhost:27017/db" --target "sqlite:///C:/mydb.sqlite" --table "users"[/command]
 
 [bold green]Notes:[/bold green]
   • Table/collection names are case-sensitive.
   • Existing tables in target databases will NOT be replaced.
-  • Compatible with live servers for MySQL, MariaDB, PostgreSQL, and MongoDB.
 
 ---------------------------------------------------------
 Type [command]exit[/command] to leave this shell.
                 """, highlight=False)
                 continue
 
-            # ==== Clear Screen ====
             if cmd in ["cls", "clear"]:
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
 
-            # ==== Migrate Command ====
             args = shlex.split(cmd)
             if args[0] == "migrate":
                 migrate.main(args=args[1:], prog_name="py-auto-migrate", standalone_mode=False)

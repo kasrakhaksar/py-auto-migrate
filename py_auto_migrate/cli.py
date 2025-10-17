@@ -2,7 +2,7 @@ import click
 
 try:
     from .migrator import (
-        MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL,
+        MongoToMySQL, MongoToMongo, MySQLToMongo, MySQLToMySQL, MySQLToSQLServer,
         PostgresToMySQL, PostgresToMongo, PostgresToPostgres,
         MySQLToPostgres, MongoToPostgres,
         MongoToSQLite, MySQLToSQLite, PostgresToSQLite,
@@ -40,6 +40,7 @@ Supported databases:
 - MySQL
 - MariaDB
 - PostgreSQL
+- SQL Server
 - SQLite
 
 Connection URI examples:
@@ -64,6 +65,13 @@ MongoDB:
   Example:
     mongodb://localhost:27017/testdb
 
+
+SQL Server (SQL Auth):
+  mssql://<user>:<password>@<host>:<port>/<database>
+SQL Server (Windows Auth):
+  mssql://@<host>:<port>/<database>
+
+             
 SQLite:
   sqlite:///<path_to_sqlite_file>
   Example:
@@ -85,8 +93,8 @@ def main():
 📤 Perform migration between databases.
 
 Parameters:
-  --source      Source DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | sqlite://)
-  --target      Target DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | sqlite://)
+  --source      Source DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | mssql:// | sqlite://)
+  --target      Target DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | mssql:// | sqlite://)
   --table       (Optional) Migrate only one table/collection
 """)
 @click.option('--source', required=True, help="Source DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | sqlite://)")
@@ -118,6 +126,8 @@ def migrate(source, target, table):
         m = MySQLToSQLite(source, target)
     elif source.startswith("mysql://") and target.startswith("mariadb://"):
         m = MariaToMySQL(source, target)
+    elif source.startswith("mysql://") and (target.startswith("mssql://") or target.startswith("sqlserver://")):
+        m = MySQLToSQLServer(source, target)
 
     # =================== MariaDB ===================
     elif source.startswith("mariadb://") and target.startswith("mariadb://"):

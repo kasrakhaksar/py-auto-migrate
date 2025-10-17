@@ -110,6 +110,7 @@ py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysq
   <li>MongoDB</li>
   <li>PostgreSQL</li>
   <li>MariaDB</li>
+  <li>SQL Server</li>
   <li>SQLite</li>
 </ul>
 
