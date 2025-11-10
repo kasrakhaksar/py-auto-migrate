@@ -28,9 +28,9 @@ pip install py-auto-migrate
 ```
 
 
-## Download CLI 
+## Download Shell 
 
-If you don’t have Python, or you want to use it with the CLI (Shell), you can download the dedicated <b>PAM-CLI</b> from the <b>Releases</b> on GitHub epository.
+If you don’t have Python, or you want to use it with the Shell, you can download the dedicated <b>PAM-Shell</b> from the <b>Releases</b> on GitHub epository.
 
 <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases" target="_blank">
   <img src="https://img.shields.io/badge/-Release-blue?logo=github" />
@@ -40,7 +40,6 @@ If you don’t have Python, or you want to use it with the CLI (Shell), you can 
 
 
 ## Help
-
 ```bash
 py-auto-migrate --help
 ```
@@ -53,30 +52,22 @@ py-auto-migrate --help
 
 
 ## Usage
-<b>Command Line Interface (CLI)</b>
+
+Command-Line Interface (CLI)
 ```bash
 py-auto-migrate migrate --source <source_uri> --target <target_uri> --table <table_name>
 ```
 
-<p>
-
-  <b>--source :</b>Source database URI (e.g., mysql://user:pass@host:3306/dbname)
-
-  <b>--target :</b>Target database URI (e.g., mongodb://localhost:27017/mydb)
-
-  <b>--table (optional):</b>Specific table/collection to migrate. If omitted, all tables/collections will be
-
-</p>
-
-
----
+| Argument   | Description                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| --source | Source database URI (e.g., mysql://user:pass@host:3306/dbname)                                     |
+| --target | Target database URI (e.g., mongodb://localhost:27017/mydb)                                         |
+| --table  | Optional. Specific table/collection to migrate. If omitted, all tables/collections will be migrated. |
 
 
 ## Example
 ```bash
 py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mongodb://localhost:27017/mydb2"
-```
-```bash
 py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysql://root:1234@localhost:3306/mydb" --table users
 ```
 
@@ -84,23 +75,24 @@ py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysq
 
 ---
 
+## Supported Databases
 
-## Database Support
-<ul>
-  <li>MySQL</li>
-  <li>MongoDB</li>
-  <li>PostgreSQL</li>
-  <li>MariaDB</li>
-  <li>SQL Server</li>
-  <li>SQLite</li>
-</ul>
-
+| Database   |
+| ---------- |
+| MySQL      |
+| PostgreSQL |
+| MongoDB    |
+| MariaDB    |
+| Oracle     |
+| SQL Server |
+| SQLite     |
 
 ---
 
-
 ## Future Plans
-<ul>
-  <li>Add support for creating indexes on tables/collections to improve query performance.</li>
-  <li>Support for more databases: Add migrations for Oracle.</li>
-</ul>
+
+| Feature                                      | Status  |
+| -------------------------------------------- | ------- |
+| Index creation on tables/collections         | Planned |
+| Support for Oracle migrations                |    ✔️  |
+| Performance optimizations for large datasets | Planned |

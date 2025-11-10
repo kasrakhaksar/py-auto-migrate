@@ -1,6 +1,6 @@
 import pandas as pd
 
-# Helper: map pandas dtype → Postgres type
+
 def map_dtype_to_postgres(dtype):
     if pd.api.types.is_integer_dtype(dtype):
         return "INTEGER"
