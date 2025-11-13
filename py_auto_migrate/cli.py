@@ -1,36 +1,12 @@
 import click
 
 try:
-    from .migrator import (
-        MongoToMySQL, MongoToMongo, MongoToPostgres, MongoToSQLite, MongoToMaria, MongoToMSSQL, MongoToOracle,
-        MySQLToMongo, MySQLToMySQL, MySQLToPostgres, MySQLToSQLite, MySQLToMaria, MySQLToMSSQL, MySQLToOracle,
-        PostgresToMongo, PostgresToPostgres, PostgresToMySQL, PostgresToSQLite, PostgresToMaria, PostgresToMSSQL, PostgresToOracle,
-        SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite, SQLiteToMaria, SQLiteToMSSQL, SQLiteToOracle,
-        MariaToMySQL, MariaToMongo, MariaToPostgres, MariaToSQLite, MariaToMaria, MariaToMSSQL, MariaToOracle,
-        MSSQLToMySQL, MSSQLToMongo, MSSQLToPostgres, MSSQLToSQLite, MSSQLToMaria, MSSQLToMSSQL, MSSQLToOracle,
-        OracleToMySQL, OracleToMongo, OracleToPostgres, OracleToSQLite, OracleToMaria, OracleToMSSQL, OracleToOracle
-    )
+    from .migrator import *
 except ImportError:
     try:
-        from py_auto_migrate.migrator import (
-            MongoToMySQL, MongoToMongo, MongoToPostgres, MongoToSQLite, MongoToMaria, MongoToMSSQL, MongoToOracle,
-            MySQLToMongo, MySQLToMySQL, MySQLToPostgres, MySQLToSQLite, MySQLToMaria, MySQLToMSSQL, MySQLToOracle,
-            PostgresToMongo, PostgresToPostgres, PostgresToMySQL, PostgresToSQLite, PostgresToMaria, PostgresToMSSQL, PostgresToOracle,
-            SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite, SQLiteToMaria, SQLiteToMSSQL, SQLiteToOracle,
-            MariaToMySQL, MariaToMongo, MariaToPostgres, MariaToSQLite, MariaToMaria, MariaToMSSQL, MariaToOracle,
-            MSSQLToMySQL, MSSQLToMongo, MSSQLToPostgres, MSSQLToSQLite, MSSQLToMaria, MSSQLToMSSQL, MSSQLToOracle,
-            OracleToMySQL, OracleToMongo, OracleToPostgres, OracleToSQLite, OracleToMaria, OracleToMSSQL, OracleToOracle
-        )
+        from py_auto_migrate.migrator import *
     except ImportError:
-        from migrator import (
-            MongoToMySQL, MongoToMongo, MongoToPostgres, MongoToSQLite, MongoToMaria, MongoToMSSQL, MongoToOracle,
-            MySQLToMongo, MySQLToMySQL, MySQLToPostgres, MySQLToSQLite, MySQLToMaria, MySQLToMSSQL, MySQLToOracle,
-            PostgresToMongo, PostgresToPostgres, PostgresToMySQL, PostgresToSQLite, PostgresToMaria, PostgresToMSSQL, PostgresToOracle,
-            SQLiteToMySQL, SQLiteToPostgres, SQLiteToMongo, SQLiteToSQLite, SQLiteToMaria, SQLiteToMSSQL, SQLiteToOracle,
-            MariaToMySQL, MariaToMongo, MariaToPostgres, MariaToSQLite, MariaToMaria, MariaToMSSQL, MariaToOracle,
-            MSSQLToMySQL, MSSQLToMongo, MSSQLToPostgres, MSSQLToSQLite, MSSQLToMaria, MSSQLToMSSQL, MSSQLToOracle,
-            OracleToMySQL, OracleToMongo, OracleToPostgres, OracleToSQLite, OracleToMaria, OracleToMSSQL, OracleToOracle
-        )
+        from migrator import *
 
 
 @click.group(help="""
@@ -45,6 +21,8 @@ Supported databases:
 - PostgreSQL
 - Oracle
 - SQL Server
+- DynamoDB
+- Redis
 - SQLite
              
 
@@ -72,9 +50,18 @@ SQL Server (SQL Auth):
 SQL Server (Windows Auth):
   mssql://@<host>:<port>/<database>
 
+             
+Redis:
+  redis://[:password]@<host>:<port>/<db>
+  redis://<host>:<port>/<db>
+
+
 Oracle:
   oracle://<user>:<password>@<host>:<port>/<service_name>
 
+
+DynamoDB:
+  dynamodb://[AWS_ACCESS_KEY:AWS_SECRET_KEY@]HOST[:PORT]/TABLE_PREFIX[?region=REGION]
 
 SQLite:
   sqlite:///<path_to_sqlite_file>
@@ -87,7 +74,7 @@ Usage:
     py-auto-migrate migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db"
 
 ⚡ Migrate a single table/collection:
-    py-auto-migrate migrate --source "mariadb://user:pass@localhost:3306/db" --target "mongodb://localhost:27017/db" --table "users"
+    py-auto-migrate migrate --source "mariadb://user:pass@localhost:3306/db" --target "mongodb://username:password@<host>:<port>/<database>" --table "users"
 """)
 def main():
     pass
@@ -97,8 +84,8 @@ def main():
 📤 Perform migration between databases.
 
 Parameters:
-  --source      Source DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | mssql:// | sqlite:// | oracle://)
-  --target      Target DB URI (mysql:// | mariadb:// | mongodb:// | postgresql:// | mssql:// | sqlite:// | oracle://)
+  --source      Source DB URI 
+  --target      Target DB URI
   --table       (Optional) Migrate only one table/collection
 """)
 @click.option('--source', required=True, help="Source DB URI")
@@ -123,6 +110,10 @@ def migrate(source, target, table):
             m = MongoToMSSQL(source, target)
         elif target.startswith("oracle://"):
             m = MongoToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = MongoToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = MongoToDynamoDB(source, target)
         else:
             m = None
 
@@ -142,6 +133,10 @@ def migrate(source, target, table):
             m = MySQLToMSSQL(source, target)
         elif target.startswith("oracle://"):
             m = MySQLToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = MySQLToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = MySQLToDynamoDB(source, target)
         else:
             m = None
 
@@ -161,6 +156,10 @@ def migrate(source, target, table):
             m = MariaToMSSQL(source, target)
         elif target.startswith("oracle://"):
             m = MariaToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = MariaToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = MariaToDynamoDB(source, target)
         else:
             m = None
 
@@ -180,6 +179,10 @@ def migrate(source, target, table):
             m = PostgresToMSSQL(source, target)
         elif target.startswith("oracle://"):
             m = PostgresToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = PostgresToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = PostgresToDynamoDB(source, target)
         else:
             m = None
 
@@ -199,6 +202,10 @@ def migrate(source, target, table):
             m = MSSQLToOracle(source, target)
         elif target.startswith("mssql://") or target.startswith("MSSQL://"):
             m = MSSQLToMSSQL(source, target)
+        elif target.startswith("redis://"):
+            m = MSSQLToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = MSSQLToDynamoDB(source, target)
         else:
             m = None
 
@@ -218,6 +225,56 @@ def migrate(source, target, table):
             m = OracleToMongo(source, target)
         elif target.startswith("oracle://"):
             m = OracleToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = OracleToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = OracleToDynamoDB(source, target)
+        else:
+            m = None
+
+    # =================== Redis ===================
+    elif source.startswith("redis://"):
+        if target.startswith("mysql://"):
+            m = RedisToMySQL(source, target)
+        elif target.startswith("mariadb://"):
+            m = RedisToMaria(source, target)
+        elif target.startswith("mongodb://"):
+            m = RedisToMongo(source, target)
+        elif target.startswith("postgresql://"):
+            m = RedisToPostgres(source, target)
+        elif target.startswith("sqlite://"):
+            m = RedisToSQLite(source, target)
+        elif target.startswith("mssql://"):
+            m = RedisToMSSQL(source, target)
+        elif target.startswith("oracle://"):
+            m = RedisToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = RedisToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = RedisToDynamoDB(source, target)
+        else:
+            m = None
+
+    # =================== DynamoDB ===================
+    elif source.startswith("dynamodb://"):
+        if target.startswith("mongodb://"):
+            m = DynamoToMongo(source, target)
+        elif target.startswith("mysql://"):
+            m = DynamoToMySQL(source, target)
+        elif target.startswith("postgresql://"):
+            m = DynamoToPostgres(source, target)
+        elif target.startswith("mariadb://"):
+            m = DynamoToMaria(source, target)
+        elif target.startswith("sqlite://"):
+            m = DynamoToSQLite(source, target)
+        elif target.startswith("mssql://"):
+            m = DynamoToMSSQL(source, target)
+        elif target.startswith("oracle://"):
+            m = DynamoToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = DynamoToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = DynamoToDynamo(source, target)
         else:
             m = None
 
@@ -241,6 +298,10 @@ def migrate(source, target, table):
             m = SQLiteToMSSQL(src_path, tgt_path)
         elif target.startswith("oracle://"):
             m = SQLiteToOracle(src_path, tgt_path)
+        elif target.startswith("redis://"):
+            m = SQLiteToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = SQLiteToDynamoDB(source, target)
         else:
             m = None
 

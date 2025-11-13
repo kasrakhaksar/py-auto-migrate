@@ -1,4 +1,4 @@
-from ..base_models.base_mongodb import BaseMongoDB
+from py_auto_migrate.base_models.base_mongodb import BaseMongoDB
 
 
 class InsertMongoDB(BaseMongoDB):

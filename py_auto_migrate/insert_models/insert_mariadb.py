@@ -1,4 +1,4 @@
-from ..base_models.base_mariadb import BaseMariaDB
+from py_auto_migrate.base_models.base_mariadb import BaseMariaDB
 from mysqlSaver import Saver, CheckerAndReceiver, Creator, Connection
 
 

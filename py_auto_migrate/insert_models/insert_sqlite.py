@@ -1,5 +1,5 @@
 import os
-from ..base_models.base_sqlite import BaseSQLite
+from py_auto_migrate.base_models.base_sqlite import BaseSQLite
 
 
 class InsertSQLite(BaseSQLite):

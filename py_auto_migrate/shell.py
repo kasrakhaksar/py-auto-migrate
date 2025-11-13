@@ -58,6 +58,8 @@ This shell allows you to migrate data between different databases interactively.
   • PostgreSQL
   • Oracle
   • SQL Server
+  • DynamoDB
+  • Redis
   • SQLite
 
 [bold green]Available Commands:[/bold green]
@@ -79,6 +81,11 @@ This shell allows you to migrate data between different databases interactively.
   MongoDB:
     mongodb://<host>:<port>/<database>
     mongodb://username:password@<host>:<port>/<database>
+                              
+  Redis:
+    redis://[:password]@<host>:<port>/<db>
+    redis://<host>:<port>/<db>
+
 
   SQL Server (SQL Auth):
     mssql://<user>:<password>@<host>:<port>/<database>
@@ -87,7 +94,10 @@ This shell allows you to migrate data between different databases interactively.
 
   Oracle:
     oracle://<user>:<password>@<host>:<port>/<service_name>
-
+                              
+  DynamoDB:
+    dynamodb://<aws_access_key>:<aws_secret_key>@<region>/<table_prefix>
+                              
   SQLite:
     sqlite:///<path_to_sqlite_file>
 
@@ -98,9 +108,7 @@ This shell allows you to migrate data between different databases interactively.
   ➤ Migrate one table only:
     [command]migrate --source "sqlite:///C:/data/mydb.sqlite" --target "postgresql://user:pass@localhost:5432/db" --table customers[/command]
 
-  ➤ Migrate from Oracle to PostgreSQL:
-    [command]migrate --source "oracle://system:1234@localhost:1521/xe" --target "postgresql://postgres:1234@localhost:5432/testdb"[/command]
-
+                              
 [bold green]Notes:[/bold green]
   • Table/collection names are case-sensitive.
   • Existing tables in target databases will NOT be replaced.

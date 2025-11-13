@@ -1,14 +1,15 @@
-from ..base_models.base_mssql import BaseMSSQL
-from ..insert_models.insert_mssql import InsertMSSQL
+from py_auto_migrate.base_models.base_mssql import BaseMSSQL
+from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
 
 
-from ..insert_models.insert_mysql import InsertMySQL
-from ..insert_models.insert_mongodb import InsertMongoDB
-from ..insert_models.insert_sqlite import InsertSQLite
-from ..insert_models.insert_postgressql import InsertPostgresSQL
-from ..insert_models.insert_mariadb import InsertMariaDB
-from ..insert_models.insert_oracle import InsertOracle
-
+from py_auto_migrate.insert_models.insert_mysql import InsertMySQL
+from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
+from py_auto_migrate.insert_models.insert_sqlite import InsertSQLite
+from py_auto_migrate.insert_models.insert_postgressql import InsertPostgresSQL
+from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
+from py_auto_migrate.insert_models.insert_oracle import InsertOracle
+from py_auto_migrate.insert_models.insert_redis import InsertRedis
+from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 
 
 # ========= SQL Server → MySQL =========
@@ -129,3 +130,39 @@ class MSSQLToOracle(BaseMSSQL):
         for t in self.get_tables():
             print(f"➡ Migrating table: {t}")
             self.migrate_one(t)
+
+
+
+# ========= SQL Server → Redis =========
+class MSSQLToRedis(BaseMSSQL):
+    def __init__(self, mssql_uri, redis_uri):
+        super().__init__(mssql_uri)
+        self.inserter = InsertRedis(redis_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)
+
+
+
+# ========= SQL Server → Dynamo =========
+class MSSQLToDynamoDB(BaseMSSQL):
+    def __init__(self, mssql_uri, dynamo_uri):
+        super().__init__(mssql_uri)
+        self.inserter = InsertDynamoDB(dynamo_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)

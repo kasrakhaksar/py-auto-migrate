@@ -1,4 +1,4 @@
-from ..base_models.base_mysql import BaseMySQL
+from py_auto_migrate.base_models.base_mysql import BaseMySQL
 
 class InsertMySQL(BaseMySQL):
     def __init__(self, mysql_uri):

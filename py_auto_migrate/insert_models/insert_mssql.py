@@ -1,4 +1,4 @@
-from ..base_models.base_mssql import BaseMSSQL
+from py_auto_migrate.base_models.base_mssql import BaseMSSQL
 
 
 

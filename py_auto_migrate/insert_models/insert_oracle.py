@@ -1,4 +1,4 @@
-from ..base_models.base_oracle import BaseOracle
+from py_auto_migrate.base_models.base_oracle import BaseOracle
 
 
 class InsertOracle(BaseOracle):

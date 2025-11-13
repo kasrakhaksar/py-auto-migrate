@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  A powerful database migration tool to transfer data (e.g., between MongoDB and MySQL or PostgreSQL and MySQL), with automatic table/database creation, existence checks, and support for full database migrations.
+  A powerful database migration tool to transfer data (e.g., between MongoDB → MySQL or PostgreSQL and Oracle), with automatic table/database creation, existence checks, and support for full database migrations.
 </p>
 
 [![PyPI](https://img.shields.io/badge/PyPI-Package-blue?logo=pypi)](https://pypi.org/project/py-auto-migrate/) 
@@ -44,34 +44,53 @@ If you don’t have Python, or you want to use it with the Shell, you can downlo
 py-auto-migrate --help
 ```
 
-<p>This command displays a detailed guide on how to use the package, including available commands, arguments, and examples. It’s the best place to start if you want to quickly understand how to work with py-auto-migrate.</p>
+<p>After installation using pip, open your terminal (command line). This command displays a detailed guide on how to use the package, including available commands, arguments, and examples. It’s the best place to start if you want to quickly understand how to work with py-auto-migrate.</p>
 
 
+<p>‌But in <b>PAM-Shell</b> , you just need to type `help`</p>
+
+
+
+```bash
+py-auto-migrate> help
+```
 
 ---
 
 
 ## Usage
 
-Command-Line Interface (CLI)
 ```bash
 py-auto-migrate migrate --source <source_uri> --target <target_uri> --table <table_name>
 ```
-
 | Argument   | Description                                                                                          |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
-| --source | Source database URI (e.g., mysql://user:pass@host:3306/dbname)                                     |
-| --target | Target database URI (e.g., mongodb://localhost:27017/mydb)                                         |
-| --table  | Optional. Specific table/collection to migrate. If omitted, all tables/collections will be migrated. |
+| --source | Source database URI (e.g., mysql://user:pass@host:3306/dbname)                                         |
+| --target | Target database URI (e.g., oracle://<user>:<password>@<host>:<port>/<service_name>)                    |
+| --table  | Optional. Specific table/collection to migrate. If omitted, all tables/collections will be migrated.   |
 
 
 ## Example
+
+Example 1:
+
 ```bash
-py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mongodb://localhost:27017/mydb2"
-py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysql://root:1234@localhost:3306/mydb" --table users
+py-auto-migrate migrate --source "mongodb://username:password@<host>:<port>/mydb" --target "mongodb://username:password@<host>:<port>/mydb2"
 ```
 
+Example 2:
+
+```bash
+py-auto-migrate migrate --source "postgresql://<user>:<password>@<host>:<port>/mydb" --target "mysql://<user>:<password>@<host>:<port>/mydb" --table users
+```
+
+
+<b>If the database or table does not exist, it will create them for you based on the column types of the DataFrame.</b>
+
 <p>You can also use MongoDB → MongoDB or PostgreSQL → PostgreSQL</p>
+
+
+
 
 ---
 
@@ -84,6 +103,8 @@ py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysq
 | MongoDB    |
 | MariaDB    |
 | Oracle     |
+| Redis      |
+| DynamoDB   |
 | SQL Server |
 | SQLite     |
 
@@ -93,6 +114,8 @@ py-auto-migrate migrate --source "mongodb://localhost:27017/mydb" --target "mysq
 
 | Feature                                      | Status  |
 | -------------------------------------------- | ------- |
+| Support for Redis migrations                 |    ✔️   |
+| Support for DynamoDB migrations              |    ✔️   |
 | Index creation on tables/collections         | Planned |
-| Support for Oracle migrations                |    ✔️  |
 | Performance optimizations for large datasets | Planned |
+

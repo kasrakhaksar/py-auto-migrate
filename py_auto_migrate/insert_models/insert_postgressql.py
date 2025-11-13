@@ -1,5 +1,5 @@
-from ..base_models.base_postgressql import BasePostgresSQL
-from ..utils.helpers import map_dtype_to_postgres
+from py_auto_migrate.base_models.base_postgressql import BasePostgresSQL
+from py_auto_migrate.utils.helpers import map_dtype_to_postgres
 
 
 class InsertPostgresSQL(BasePostgresSQL):

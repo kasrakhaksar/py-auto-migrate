@@ -1,14 +1,15 @@
-from ..base_models.base_sqlite import BaseSQLite
-from ..insert_models.insert_sqlite import InsertSQLite
+from py_auto_migrate.base_models.base_sqlite import BaseSQLite
+from py_auto_migrate.insert_models.insert_sqlite import InsertSQLite
 
 
-from ..insert_models.insert_mssql import InsertMSSQL
-from ..insert_models.insert_mongodb import InsertMongoDB
-from ..insert_models.insert_postgressql import InsertPostgresSQL
-from ..insert_models.insert_mysql import InsertMySQL
-from ..insert_models.insert_mariadb import InsertMariaDB
-from ..insert_models.insert_oracle import InsertOracle
-
+from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
+from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
+from py_auto_migrate.insert_models.insert_postgressql import InsertPostgresSQL
+from py_auto_migrate.insert_models.insert_mysql import InsertMySQL
+from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
+from py_auto_migrate.insert_models.insert_oracle import InsertOracle
+from py_auto_migrate.insert_models.insert_redis import InsertRedis
+from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 
 # ========= SQLite → MySQL =========
 class SQLiteToMySQL(BaseSQLite):
@@ -133,3 +134,39 @@ class SQLiteToOracle(BaseSQLite):
         for t in self.get_tables():
             print(f"➡ Migrating table: {t}")
             self.migrate_one(t)
+
+
+
+# ========= SQLite → Redis =========
+class SQLiteToRedis(BaseSQLite):
+    def __init__(self, sqlite_path, redis_uri):
+        super().__init__(sqlite_path)
+        self.inserter = InsertRedis(redis_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)
+
+
+
+# ========= SQLite → Dynamo =========
+class SQLiteToDynamoDB(BaseSQLite):
+    def __init__(self, sqlite_path, dynamo_uri):
+        super().__init__(sqlite_path)
+        self.inserter = InsertDynamoDB(dynamo_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for table in self.get_tables():
+            print(f"➡ Migrating table: {table}")
+            self.migrate_one(table)
