@@ -10,6 +10,7 @@ from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
 
 # ========= Postgres → MySQL =========
 class PostgresToMySQL(BasePostgresSQL):
@@ -169,3 +170,21 @@ class PostgresToDynamoDB(BasePostgresSQL):
         for table in self.get_tables():
             print(f"➡ Migrating table: {table}")
             self.migrate_one(table)
+
+
+
+# ========= Postgres → ElasticSearch =========
+class PostgresToElastic(BasePostgresSQL):
+    def __init__(self, pg_uri, elastic_uri):
+        super().__init__(pg_uri)
+        self.inserter = InsertElasticsearch(elastic_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for t in self.get_tables():
+            print(f"➡ Migrating table: {t}")
+            self.migrate_one(t)

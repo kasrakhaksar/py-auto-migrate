@@ -9,6 +9,7 @@ from py_auto_migrate.insert_models.insert_postgressql import InsertPostgresSQL
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
 
 
 # ========= Dynamo → MongoDB =========
@@ -152,6 +153,25 @@ class DynamoToDynamo(BaseDynamoDB):
     def __init__(self, source_uri, target_uri):
         super().__init__(source_uri)
         self.inserter = InsertDynamoDB(target_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for t in self.get_tables():
+            print(f"➡ Migrating table: {t}")
+            self.migrate_one(t)
+
+
+
+
+# ========= Dynamo → ElasticSearch =========
+class DynamoToElastic(BaseDynamoDB):
+    def __init__(self, dynamo_uri, elastic_uri):
+        super().__init__(dynamo_uri)
+        self.inserter = InsertElasticsearch(elastic_uri)
 
     def migrate_one(self, table_name):
         df = self.read_table(table_name)

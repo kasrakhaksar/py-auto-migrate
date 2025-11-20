@@ -10,6 +10,7 @@ from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_postgressql import InsertPostgresSQL
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
 
 
 # ========= Redis → PostgreSQL =========
@@ -162,6 +163,26 @@ class RedisToDynamoDB(BaseRedis):
     def __init__(self, redis_uri, dynamo_uri):
         super().__init__(redis_uri)
         self.inserter = InsertDynamoDB(dynamo_uri)
+
+    def migrate_one(self, key):
+        df = self.read_key(key)
+        if not df.empty:
+            self.inserter.insert(df, key)
+
+    def migrate_all(self, pattern='*'):
+        for key in self.get_keys(pattern):
+            print(
+                f"➡ Migrating table: {key.decode() if isinstance(key, bytes) else key}")
+            self.migrate_one(key.decode() if isinstance(key, bytes) else key)
+
+
+
+
+# ========= Redis → ElasticSearch =========
+class RedisToElastic(BaseRedis):
+    def __init__(self, redis_uri, elastic_uri):
+        super().__init__(redis_uri)
+        self.inserter = InsertElasticsearch(elastic_uri)
 
     def migrate_one(self, key):
         df = self.read_key(key)

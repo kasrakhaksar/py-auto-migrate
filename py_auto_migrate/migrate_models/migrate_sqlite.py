@@ -10,6 +10,8 @@ from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+
 
 # ========= SQLite → MySQL =========
 class SQLiteToMySQL(BaseSQLite):
@@ -79,21 +81,19 @@ class SQLiteToPostgres(BaseSQLite):
             self.migrate_one(table)
 
 
+
 # ========= SQLite → MariaDB =========
 class SQLiteToMaria(BaseSQLite):
-    def __init__(self, sqlite_path, maria_uri, mongo_target_uri=None):
+    def __init__(self, sqlite_path, maria_uri):
         super().__init__(sqlite_path)
-        self.maria_inserter = InsertMariaDB(maria_uri)
-        self.mongo_target_inserter = InsertMongoDB(
-            mongo_target_uri) if mongo_target_uri else None
+        self.inserter = InsertMariaDB(maria_uri)
+
 
     def migrate_one(self, table_name):
         df = self.read_table(table_name)
-        if df.empty:
-            return
-        self.maria_inserter.insert(df, table_name)
-        if self.mongo_target_inserter:
-            self.mongo_target_inserter.insert(df, table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+        
 
     def migrate_all(self):
         for table in self.get_tables():
@@ -170,3 +170,20 @@ class SQLiteToDynamoDB(BaseSQLite):
         for table in self.get_tables():
             print(f"➡ Migrating table: {table}")
             self.migrate_one(table)
+
+
+# ========= SQLite → ElasticSearch =========
+class SQLiteToElastic(BaseSQLite):
+    def __init__(self, sqlite_path, elastic_uri):
+        super().__init__(sqlite_path)
+        self.inserter = InsertElasticsearch(elastic_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for t in self.get_tables():
+            print(f"➡ Migrating table: {t}")
+            self.migrate_one(t)

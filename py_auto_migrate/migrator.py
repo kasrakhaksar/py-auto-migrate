@@ -7,3 +7,4 @@ from py_auto_migrate.migrate_models.migrate_mssql import *
 from py_auto_migrate.migrate_models.migrate_oracle import *
 from py_auto_migrate.migrate_models.migrate_redis import *
 from py_auto_migrate.migrate_models.migrate_dynamodb import *
+from py_auto_migrate.migrate_models.migrate_elastic import *

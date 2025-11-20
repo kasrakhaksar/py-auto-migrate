@@ -10,6 +10,7 @@ from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
 
 # ========= Mongo → MySQL =========
 class MongoToMySQL(BaseMongoDB):
@@ -170,3 +171,21 @@ class MongoToDynamoDB(BaseMongoDB):
         for table in self.get_collections():
             print(f"➡ Migrating table: {table}")
             self.migrate_one(table)
+
+
+
+# ========= Mongo → ElasticSearch =========
+class MongoToElastic(BaseMongoDB):
+    def __init__(self, mongo_uri, elastic_uri):
+        super().__init__(mongo_uri)
+        self.inserter = InsertElasticsearch(elastic_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_collection(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for t in self.get_collections():
+            print(f"➡ Migrating table: {t}")
+            self.migrate_one(t)

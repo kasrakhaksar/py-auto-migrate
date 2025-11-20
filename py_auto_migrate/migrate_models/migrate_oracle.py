@@ -10,6 +10,7 @@ from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
 from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
+from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
 
 
 # ========= Oracle → MySQL =========
@@ -160,3 +161,21 @@ class OracleToDynamoDB(BaseOracle):
         for table in self.get_tables():
             print(f"➡ Migrating table: {table}")
             self.migrate_one(table)
+
+
+
+# ========= Oracle → ElasticSearch =========
+class OracleToElastic(BaseOracle):
+    def __init__(self, oracle_uri, elastic_uri):
+        super().__init__(oracle_uri)
+        self.inserter = InsertElasticsearch(elastic_uri)
+
+    def migrate_one(self, table_name):
+        df = self.read_table(table_name)
+        if not df.empty:
+            self.inserter.insert(df, table_name)
+
+    def migrate_all(self):
+        for t in self.get_tables():
+            print(f"➡ Migrating table: {t}")
+            self.migrate_one(t)

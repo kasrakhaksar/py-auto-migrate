@@ -23,6 +23,7 @@ Supported databases:
 - SQL Server
 - DynamoDB
 - Redis
+- Elastic Search
 - SQLite
              
 
@@ -61,7 +62,12 @@ Oracle:
 
 
 DynamoDB:
-  dynamodb://[AWS_ACCESS_KEY:AWS_SECRET_KEY@]HOST[:PORT]/TABLE_PREFIX[?region=REGION]
+  dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<table>?region=<region>
+             
+
+Elastic Search:
+    elasticsearch://username:password@localhost:9200
+             
 
 SQLite:
   sqlite:///<path_to_sqlite_file>
@@ -75,7 +81,11 @@ Usage:
 
 ⚡ Migrate a single table/collection:
     py-auto-migrate migrate --source "mariadb://user:pass@localhost:3306/db" --target "mongodb://username:password@<host>:<port>/<database>" --table "users"
+             
+
 """)
+
+
 def main():
     pass
 
@@ -114,6 +124,8 @@ def migrate(source, target, table):
             m = MongoToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = MongoToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = MongoToElastic(source, target)
         else:
             m = None
 
@@ -137,6 +149,8 @@ def migrate(source, target, table):
             m = MySQLToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = MySQLToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = MySQLToElastic(source, target)            
         else:
             m = None
 
@@ -160,6 +174,8 @@ def migrate(source, target, table):
             m = MariaToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = MariaToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = MariaDBToElastic(source, target)            
         else:
             m = None
 
@@ -183,6 +199,8 @@ def migrate(source, target, table):
             m = PostgresToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = PostgresToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = PostgresToElastic(source, target)
         else:
             m = None
 
@@ -206,6 +224,8 @@ def migrate(source, target, table):
             m = MSSQLToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = MSSQLToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = MSSQLToElastic(source, target)
         else:
             m = None
 
@@ -229,6 +249,34 @@ def migrate(source, target, table):
             m = OracleToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = OracleToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = OracleToElastic(source, target)
+        else:
+            m = None
+
+
+    # =================== Elasticsearch ===================
+    if source.startswith("elasticsearch://"):
+        if target.startswith("mysql://"):
+            m = ElasticToMySQL(source, target)
+        elif target.startswith("mariadb://"):
+            m = ElasticToMaria(source, target)
+        elif target.startswith("mongodb://"):
+            m = ElasticToMongo(source, target)
+        elif target.startswith("postgresql://"):
+            m = ElasticToPostgres(source, target)
+        elif target.startswith("sqlite://"):
+            m = ElasticToSQLite(source, target)
+        elif target.startswith("mssql://"):
+            m = ElasticToMSSQL(source, target)
+        elif target.startswith("oracle://"):
+            m = ElasticToOracle(source, target)
+        elif target.startswith("redis://"):
+            m = ElasticToRedis(source, target)
+        elif target.startswith("dynamodb://"):
+            m = ElasticToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = ElasticToElastic(source, target)
         else:
             m = None
 
@@ -252,6 +300,8 @@ def migrate(source, target, table):
             m = RedisToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = RedisToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = RedisToElastic(source, target)
         else:
             m = None
 
@@ -275,6 +325,8 @@ def migrate(source, target, table):
             m = DynamoToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = DynamoToDynamo(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = DynamoToElastic(source, target)
         else:
             m = None
 
@@ -302,6 +354,8 @@ def migrate(source, target, table):
             m = SQLiteToRedis(source, target)
         elif target.startswith("dynamodb://"):
             m = SQLiteToDynamoDB(source, target)
+        elif target.startswith("elasticsearch://"):
+            m = SQLiteToElastic(source, target)
         else:
             m = None
 

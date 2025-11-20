@@ -60,6 +60,7 @@ This shell allows you to migrate data between different databases interactively.
   • SQL Server
   • DynamoDB
   • Redis
+  • Elastic Search
   • SQLite
 
 [bold green]Available Commands:[/bold green]
@@ -96,7 +97,11 @@ This shell allows you to migrate data between different databases interactively.
     oracle://<user>:<password>@<host>:<port>/<service_name>
                               
   DynamoDB:
-    dynamodb://<aws_access_key>:<aws_secret_key>@<region>/<table_prefix>
+    dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<table>?region=<region>
+                              
+
+  Elastic Search:
+    elasticsearch://username:password@localhost:9200
                               
   SQLite:
     sqlite:///<path_to_sqlite_file>
