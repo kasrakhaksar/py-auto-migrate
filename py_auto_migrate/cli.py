@@ -1,10 +1,10 @@
 import click
 
 try:
-    from .migrator import *
+    from py_auto_migrate.migrator import *
 except ImportError:
     try:
-        from py_auto_migrate.migrator import *
+        from .migrator import *
     except ImportError:
         from migrator import *
 
