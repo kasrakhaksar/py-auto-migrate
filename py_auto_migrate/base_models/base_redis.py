@@ -1,44 +1,43 @@
 import redis
 import pandas as pd
 import json
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseRedis:
+class BaseRedis(BaseModel):
     def __init__(self, redis_uri):
-        self.redis_uri = redis_uri
-        self._conn = None
+        super().__init__(redis_uri)
 
     def _connect(self):
-        if self._conn:
-            return self._conn
         try:
-            self._conn = redis.from_url(self.redis_uri)
-            self._conn.ping()
-            return self._conn
+            conn = redis.from_url(self.uri)
+            conn.ping()
+            return conn
         except Exception as e:
-            print(f"❌ Redis Connection Error: {e}")
             return None
 
-    def get_keys(self, pattern='*'):
+    def get_tables(self):
         conn = self._connect()
         if conn is None:
             return []
         try:
-            return conn.keys(pattern)
+            keys = conn.keys('*')
+            return [key.decode('utf-8') if isinstance(key, bytes) else key for key in keys]
         except Exception as e:
-            print(f"❌ Error fetching keys: {e}")
             return []
 
-    def read_key(self, key):
+    def read_table(self, table_name):
         conn = self._connect()
         if conn is None:
             return pd.DataFrame()
         try:
-            value = conn.get(key)
+            value = conn.get(table_name)
             if value is None:
-                print(f"❌ Key '{key}' not found or empty.")
                 return pd.DataFrame()
 
+            if isinstance(value, bytes):
+                value = value.decode('utf-8')
+            
             data = json.loads(value)
 
             if isinstance(data, dict) and all(str(k).isdigit() for k in data.keys()):
@@ -49,10 +48,8 @@ class BaseRedis:
             elif isinstance(data, dict):
                 df = pd.DataFrame([data])
             else:
-                print(f"⚠ Unexpected data format in key '{key}'.")
                 return pd.DataFrame()
 
             return df.fillna(0)
         except Exception as e:
-            print(f"❌ Error reading key '{key}': {e}")
             return pd.DataFrame()

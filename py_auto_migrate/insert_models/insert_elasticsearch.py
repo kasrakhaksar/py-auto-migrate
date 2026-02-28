@@ -1,27 +1,26 @@
 from elasticsearch import helpers
 from py_auto_migrate.base_models.base_elasticsearch import BaseElasticsearch
+from py_auto_migrate.insert_models.base import BaseInsert
 
 
-class InsertElasticsearch(BaseElasticsearch):
+class InsertElasticsearch(BaseElasticsearch, BaseInsert):
     def __init__(self, es_uri):
         super().__init__(es_uri)
 
-    def insert(self, df, index_name):
+    def insert(self, df, table_name):
         es = self._connect()
         if es is None:
-            print("❌ Cannot connect to Elasticsearch. Insert aborted.")
             return
 
-        if es.indices.exists(index=index_name):
-            print(f"⚠ Index '{index_name}' already exists. Skipping insert.")
+        if es.indices.exists(index=table_name):
             return
 
-        es.indices.create(index=index_name, ignore=400)
+        es.indices.create(index=table_name, ignore=400)
 
         try:
             actions = [
                 {
-                    "_index": index_name,
+                    "_index": table_name,
                     "_source": row.to_dict()
                 }
                 for _, row in df.iterrows()
@@ -29,7 +28,5 @@ class InsertElasticsearch(BaseElasticsearch):
 
             helpers.bulk(es, actions)
 
-            print(f"✅ Inserted {len(df)} rows into Elasticsearch index '{index_name}'")
-
         except Exception as e:
-            print(f"❌ Error inserting into Elasticsearch: {e}")
+            pass

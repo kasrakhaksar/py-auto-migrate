@@ -1,6 +1,6 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_sqlite import BaseSQLite
 from py_auto_migrate.insert_models.insert_sqlite import InsertSQLite
-
 
 from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
 from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
@@ -11,179 +11,71 @@ from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
-# ========= SQLite → MySQL =========
-class SQLiteToMySQL(BaseSQLite):
-    def __init__(self, sqlite_path, mysql_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertMySQL(mysql_uri)
+class BaseSQLiteMigration(BaseMigration, BaseSQLite):
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+    def _initialize_source_connection(self):
+        BaseSQLite.__init__(self, self.source_uri)
 
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+    def read_table(self, collection_name: str):
+        return BaseSQLite.read_table(self, collection_name)
+
+    def get_tables(self):
+        return BaseSQLite.get_tables(self)
 
 
-# ========= SQLite → MongoDB =========
-class SQLiteToMongo(BaseSQLite):
-    def __init__(self, sqlite_path, mongo_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertMongoDB(mongo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToMySQL(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-# ========= SQLite → SQLite =========
-class SQLiteToSQLite(BaseSQLite):
-    def __init__(self, source_path, target_path):
-        super().__init__(source_path)
-        self.inserter = InsertSQLite(target_path)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToMongo(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMongoDB)
 
 
-# ========= SQLite → PostgreSQL =========
-class SQLiteToPostgres(BaseSQLite):
-    def __init__(self, sqlite_path, pg_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertPostgresSQL(pg_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToSQLite(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
 
 
-
-# ========= SQLite → MariaDB =========
-class SQLiteToMaria(BaseSQLite):
-    def __init__(self, sqlite_path, maria_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertMariaDB(maria_uri)
+class SQLiteToPostgres(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-        
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToMaria(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
 
 
-# ========= SQLite → SQL Server =========
-class SQLiteToMSSQL(BaseSQLite):
-    def __init__(self, sqlite_path, mssql_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertMSSQL(mssql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToMSSQL(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
 
 
-
-# ========= SQLite → Oracle =========
-class SQLiteToOracle(BaseSQLite):
-    def __init__(self, sqlite_path, oracle_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertOracle(oracle_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class SQLiteToOracle(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
 
 
-
-# ========= SQLite → Redis =========
-class SQLiteToRedis(BaseSQLite):
-    def __init__(self, sqlite_path, redis_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToRedis(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
 
 
-
-# ========= SQLite → Dynamo =========
-class SQLiteToDynamoDB(BaseSQLite):
-    def __init__(self, sqlite_path, dynamo_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertDynamoDB(dynamo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class SQLiteToDynamoDB(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
 
 
-# ========= SQLite → ElasticSearch =========
-class SQLiteToElastic(BaseSQLite):
-    def __init__(self, sqlite_path, elastic_uri):
-        super().__init__(sqlite_path)
-        self.inserter = InsertElasticsearch(elastic_uri)
+class SQLiteToElastic(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class SQLiteToClickHouse(BaseSQLiteMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)

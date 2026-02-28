@@ -1,47 +1,70 @@
 import pandas as pd
 from pymongo import MongoClient
 from urllib.parse import urlparse
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMongoDB:
+class BaseMongoDB(BaseModel):
     def __init__(self, mongo_uri):
-        self.mongo_uri = mongo_uri
+        super().__init__(mongo_uri)
 
     def _connect(self):
         try:
-            parsed = urlparse(self.mongo_uri)
+            parsed = urlparse(self.uri)
             db_name = parsed.path.lstrip('/')
 
-            if parsed.username and parsed.password:
-                uri = f"mongodb://{parsed.username}:{parsed.password}@{parsed.hostname}"
-                if parsed.port:
-                    uri += f":{parsed.port}"
-                uri += f"/{db_name}"
-            else:
-                uri = self.mongo_uri
+            if not db_name:
+                db_name = 'admin'
 
-            client = MongoClient(uri)
+            auth_source = 'admin'
+
+            if parsed.query:
+                query_params = dict(param.split('=')
+                                    for param in parsed.query.split('&') if '=' in param)
+                auth_source = query_params.get('authSource', 'admin')
+
+            client = MongoClient(
+                host=parsed.hostname,
+                port=parsed.port or 27017,
+                username=parsed.username,
+                password=parsed.password,
+                authSource=auth_source,
+                serverSelectionTimeoutMS=5000
+            )
+
+            client.admin.command('ping')
             return client[db_name]
 
         except Exception as e:
             print(f"❌ MongoDB Connection Error: {e}")
             return None
 
-    def get_collections(self):
+    def get_tables(self):
         db = self._connect()
         if db is None:
             return []
-        return db.list_collection_names()
+        try:
+            return db.list_collection_names()
+        except Exception as e:
+            print(f"❌ Error getting collections: {e}")
+            return []
 
-    def read_collection(self, collection_name):
+    def read_table(self, collection_name):
         db = self._connect()
         if db is None:
             return pd.DataFrame()
-        data = list(db[collection_name].find())
-        if not data:
-            print(f"❌ Collection '{collection_name}' is empty.")
+
+        try:
+            data = list(db[collection_name].find())
+            if not data:
+                print(f"❌ Collection '{collection_name}' is empty.")
+                return pd.DataFrame()
+
+            df = pd.DataFrame(data)
+            if "_id" in df.columns:
+                df = df.drop(columns="_id")
+
+            return df.fillna(0)
+        except Exception as e:
+            print(f"❌ Error reading collection '{collection_name}': {e}")
             return pd.DataFrame()
-        df = pd.DataFrame(data)
-        if "_id" in df.columns:
-            df = df.drop(columns="_id")
-        return df.fillna(0)

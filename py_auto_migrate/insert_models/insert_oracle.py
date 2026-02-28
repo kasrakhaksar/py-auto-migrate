@@ -1,7 +1,8 @@
 from py_auto_migrate.base_models.base_oracle import BaseOracle
+from py_auto_migrate.insert_models.base import BaseInsert
 
 
-class InsertOracle(BaseOracle):
+class InsertOracle(BaseOracle, BaseInsert):
     def __init__(self, oracle_uri):
         super().__init__(oracle_uri)
 
@@ -25,7 +26,7 @@ class InsertOracle(BaseOracle):
                 EXECUTE IMMEDIATE 'CREATE TABLE "{table_name}" ({columns})';
             EXCEPTION
                 WHEN OTHERS THEN
-                    IF SQLCODE != -955 THEN RAISE; END IF;  -- -955 = table exists
+                    IF SQLCODE != -955 THEN RAISE; END IF;
             END;
         """)
 
@@ -35,4 +36,3 @@ class InsertOracle(BaseOracle):
 
         conn.commit()
         conn.close()
-        print(f"✅ Inserted {len(df)} rows into Oracle table '{table_name}'")

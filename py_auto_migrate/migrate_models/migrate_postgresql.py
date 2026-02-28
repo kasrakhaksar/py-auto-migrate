@@ -1,6 +1,6 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_postgressql import BasePostgresSQL
 from py_auto_migrate.insert_models.insert_postgressql import InsertPostgresSQL
-
 
 from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
 from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
@@ -11,180 +11,76 @@ from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
-
-# ========= Postgres → MySQL =========
-class PostgresToMySQL(BasePostgresSQL):
-    def __init__(self, pg_uri, mysql_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertMySQL(mysql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
-# ========= Postgres → MongoDB =========
-class PostgresToMongo(BasePostgresSQL):
-    def __init__(self, pg_uri, mongo_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertMongoDB(mongo_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+    
 
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
+class BasePostgresMigration(BaseMigration, BasePostgresSQL):
+
+    def _initialize_source_connection(self):
+        BasePostgresSQL.__init__(self, self.source_uri)
+    
+    def read_table(self, collection_name: str):
+        return BasePostgresSQL.read_table(self, collection_name)
+    
+    def get_tables(self):
+        return BasePostgresSQL.get_tables(self)
 
 
-# ========= Postgres → SQLite =========
-class PostgresToSQLite(BasePostgresSQL):
-    def __init__(self, pg_uri, sqlite_file):
-        super().__init__(pg_uri)
-        self.inserter = InsertSQLite(sqlite_file)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
 
 
-# ========= Postgres → Postgre =========
-class PostgresToPostgres(BasePostgresSQL):
+class PostgresToMySQL(BasePostgresMigration):
     def __init__(self, source_uri, target_uri):
-        super().__init__(source_uri)
-        self.inserter = InsertPostgresSQL(target_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-# ========= Postgres → MariaDB =========
-class PostgresToMaria(BasePostgresSQL):
-    def __init__(self, pg_uri, maria_uri, mongo_target_uri=None):
-        super().__init__(pg_uri)
-        self.maria_inserter = InsertMariaDB(maria_uri)
-        self.mongo_target_inserter = InsertMongoDB(
-            mongo_target_uri) if mongo_target_uri else None
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if df.empty:
-            return
-        self.maria_inserter.insert(df, table_name)
-        if self.mongo_target_inserter:
-            self.mongo_target_inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
+class PostgresToMongo(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMongoDB)
 
 
-# ========= Postgres → SQL Server =========
-class PostgresToMSSQL(BasePostgresSQL):
-    def __init__(self, pg_uri, mssql_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertMSSQL(mssql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating PostgreSQL table: {table}")
-            self.migrate_one(table)
+class PostgresToSQLite(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
 
 
-# ========= Postgres → Oracle =========
-class PostgresToOracle(BasePostgresSQL):
-    def __init__(self, pg_uri, oracle_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertOracle(oracle_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class PostgresToPostgres(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
 
-
-# ========= Postgres → Redis =========
-class PostgresToRedis(BasePostgresSQL):
-    def __init__(self, pg_uri, redis_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class PostgresToMaria(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
 
 
-
-# ========= Postgres → Dynamo =========
-class PostgresToDynamoDB(BasePostgresSQL):
-    def __init__(self, pg_uri, dynamo_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertDynamoDB(dynamo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class PostgresToMSSQL(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
 
 
+class PostgresToOracle(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
 
-# ========= Postgres → ElasticSearch =========
-class PostgresToElastic(BasePostgresSQL):
-    def __init__(self, pg_uri, elastic_uri):
-        super().__init__(pg_uri)
-        self.inserter = InsertElasticsearch(elastic_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class PostgresToRedis(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+
+class PostgresToDynamoDB(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
+
+
+class PostgresToElastic(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
+
+
+class PostgresToClickHouse(BasePostgresMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)

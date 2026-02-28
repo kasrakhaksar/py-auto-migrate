@@ -1,6 +1,6 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_oracle import BaseOracle
 from py_auto_migrate.insert_models.insert_oracle import InsertOracle
-
 
 from py_auto_migrate.insert_models.insert_mysql import InsertMySQL
 from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
@@ -11,171 +11,72 @@ from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
-# ========= Oracle → MySQL =========
-class OracleToMySQL(BaseOracle):
-    def __init__(self, oracle_uri, mysql_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertMySQL(mysql_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class BaseOracleMigration(BaseMigration, BaseOracle):
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+    def _initialize_source_connection(self):
+        BaseOracle.__init__(self, self.source_uri)
+    
+    def read_table(self, collection_name: str):
+        return BaseOracle.read_table(self, collection_name)
+    
+    def get_tables(self):
+        return BaseOracle.get_tables(self)
 
 
-# ========= Oracle → MAriaDB =========
-class OracleToMaria(BaseOracle):
-    def __init__(self, oracle_uri, maria_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertMariaDB(maria_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-# ========= Oracle → Postgres =========
-class OracleToPostgres(BaseOracle):
-    def __init__(self, oracle_uri, pg_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertPostgresSQL(pg_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-# ========= Oracle → SQLite =========
-class OracleToSQLite(BaseOracle):
-    def __init__(self, oracle_uri, sqlite_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertSQLite(sqlite_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-# ========= Oracle → SQL Server =========
-class OracleToMSSQL(BaseOracle):
-    def __init__(self, oracle_uri, mssql_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertMSSQL(mssql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-# ========= Oracle → MongoDB =========
-class OracleToMongo(BaseOracle):
-    def __init__(self, oracle_uri, mongo_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertMongoDB(mongo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-# ========= Oracle → Oracle =========
-class OracleToOracle(BaseOracle):
+class OracleToMySQL(BaseOracleMigration):
     def __init__(self, source_uri, target_uri):
-        super().__init__(source_uri)
-        self.inserter = InsertOracle(target_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-
-# ========= Oracle → Redis =========
-class OracleToRedis(BaseOracle):
-    def __init__(self, oracle_uri, redis_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class OracleToMaria(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
 
 
-
-# ========= Oracle → Dynamo =========
-class OracleToDynamoDB(BaseOracle):
-    def __init__(self, oracle_uri, dynamo_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertDynamoDB(dynamo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class OracleToPostgres(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
 
+class OracleToSQLite(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
 
-# ========= Oracle → ElasticSearch =========
-class OracleToElastic(BaseOracle):
-    def __init__(self, oracle_uri, elastic_uri):
-        super().__init__(oracle_uri)
-        self.inserter = InsertElasticsearch(elastic_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class OracleToMSSQL(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+
+class OracleToMongo(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMongoDB)
+
+
+class OracleToOracle(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
+
+
+class OracleToRedis(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
+
+
+class OracleToDynamoDB(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
+
+
+class OracleToElastic(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
+
+
+class OracleToClickHouse(BaseOracleMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)

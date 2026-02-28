@@ -1,13 +1,14 @@
 import sqlite3
 import pandas as pd
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseSQLite:
+class BaseSQLite(BaseModel):
     def __init__(self, sqlite_path):
-        self.sqlite_path = sqlite_path
+        super().__init__(sqlite_path)
 
     def _connect(self):
-        return sqlite3.connect(self.sqlite_path)
+        return sqlite3.connect(self.uri)
 
     def get_tables(self):
         conn = self._connect()
@@ -22,6 +23,4 @@ class BaseSQLite:
         conn = self._connect()
         df = pd.read_sql(f'SELECT * FROM "{table_name}"', conn)
         conn.close()
-        if df.empty:
-            print(f"❌ Table '{table_name}' is empty.")
         return df.fillna(0)

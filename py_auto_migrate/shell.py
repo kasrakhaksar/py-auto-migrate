@@ -46,7 +46,7 @@ def repl():
 
             if cmd.lower() == "help":
                 console.print("""
-[bold cyan]Py-Auto-Migrate Interactive Shell[/bold cyan]
+[bold cyan]PAM Shell[/bold cyan]
 ---------------------------------------------------------
 
 This shell allows you to migrate data between different databases interactively.
@@ -61,6 +61,7 @@ This shell allows you to migrate data between different databases interactively.
   • DynamoDB
   • Redis
   • Elastic Search
+  • Click House
   • SQLite
 
 [bold green]Available Commands:[/bold green]
@@ -101,7 +102,11 @@ This shell allows you to migrate data between different databases interactively.
                               
 
   Elastic Search:
-    elasticsearch://username:password@localhost:9200
+    elasticsearch://<username>:<password>@<localhost>:<port>
+
+                                                  
+  Click House:
+    clickhouse://<user>:<password>@<host>:<port>/<database>
                               
   SQLite:
     sqlite:///<path_to_sqlite_file>

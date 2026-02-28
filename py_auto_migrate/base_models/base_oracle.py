@@ -1,13 +1,14 @@
 import oracledb
 import pandas as pd
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseOracle:
+class BaseOracle(BaseModel):
     def __init__(self, oracle_uri):
-        self.oracle_uri = oracle_uri
+        super().__init__(oracle_uri)
 
     def _parse_oracle_uri(self):
-        uri = self.oracle_uri.replace("oracle://", "")
+        uri = self.uri.replace("oracle://", "")
         user_pass, host_db = uri.split("@")
         user, password = user_pass.split(":")
         host_port, db_name = host_db.split("/")
@@ -20,7 +21,6 @@ class BaseOracle:
     def _connect(self):
         user, password, host, port, db_name = self._parse_oracle_uri()
         dsn = f"{host}:{port}/{db_name}"
-
         return oracledb.connect(user=user, password=password, dsn=dsn)
 
     def get_tables(self):

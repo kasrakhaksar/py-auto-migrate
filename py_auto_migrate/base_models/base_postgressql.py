@@ -1,13 +1,14 @@
 import psycopg2
 import pandas as pd
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BasePostgresSQL:
+class BasePostgresSQL(BaseModel):
     def __init__(self, pg_uri):
-        self.pg_uri = pg_uri
+        super().__init__(pg_uri)
 
     def _connect(self):
-        user_pass, host_db = self.pg_uri.replace(
+        user_pass, host_db = self.uri.replace(
             "postgresql://", "").split("@")
         user, password = user_pass.split(":")
         host_port, db_name = host_db.split("/")
@@ -19,7 +20,6 @@ class BasePostgresSQL:
         try:
             return psycopg2.connect(host=host, port=port, user=user, password=password, dbname=db_name)
         except Exception as e:
-            print(f"❌ PostgreSQL Connection Error: {e}")
             return None
 
     def get_tables(self):
@@ -40,6 +40,4 @@ class BasePostgresSQL:
             return pd.DataFrame()
         df = pd.read_sql(f'SELECT * FROM "{table_name}"', conn)
         conn.close()
-        if df.empty:
-            print(f"❌ Table '{table_name}' is empty.")
         return df.fillna(0)

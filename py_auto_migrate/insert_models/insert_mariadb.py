@@ -1,9 +1,9 @@
 from py_auto_migrate.base_models.base_mariadb import BaseMariaDB
+from py_auto_migrate.insert_models.base import BaseInsert
 from mysqlSaver import Saver, CheckerAndReceiver, Creator, Connection
 
 
-
-class InsertMariaDB(BaseMariaDB):
+class InsertMariaDB(BaseMariaDB, BaseInsert):
     def __init__(self, maria_uri):
         super().__init__(maria_uri)
 
@@ -16,14 +16,12 @@ class InsertMariaDB(BaseMariaDB):
 
         conn = self._connect()
         if conn is None:
-            print(f"❌ Cannot connect to MariaDB database '{db_name}'. Insert aborted.")
             return
 
         checker = CheckerAndReceiver(conn)
         if checker.table_exist(table_name):
-            print(f"⚠ Table '{table_name}' already exists in MariaDB. Skipping insert.")
+            pass
         else:
             Saver(conn).sql_saver(df, table_name)
-            print(f"✅ Inserted {len(df)} rows into MariaDB table '{table_name}'")
 
         conn.close()

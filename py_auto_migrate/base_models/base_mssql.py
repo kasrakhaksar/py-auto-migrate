@@ -1,14 +1,15 @@
 import pyodbc
 import pandas as pd
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMSSQL:
+class BaseMSSQL(BaseModel):
     def __init__(self, mssql_uri):
-        self.mssql_uri = mssql_uri
+        super().__init__(mssql_uri)
 
     def _parse_mssql_uri(self, uri=None):
         if uri is None:
-            uri = self.mssql_uri
+            uri = self.uri
         uri = uri.replace("mssql://", "")
         if uri.startswith("@") or "@" not in uri:
             if uri.startswith("@"):

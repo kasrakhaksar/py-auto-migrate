@@ -1,6 +1,6 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_mssql import BaseMSSQL
 from py_auto_migrate.insert_models.insert_mssql import InsertMSSQL
-
 
 from py_auto_migrate.insert_models.insert_mysql import InsertMySQL
 from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
@@ -11,177 +11,72 @@ from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
-# ========= SQL Server → MySQL =========
-class MSSQLToMySQL(BaseMSSQL):
-    def __init__(self, mssql_uri, mysql_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertMySQL(mysql_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class BaseMSSQLMigration(BaseMigration, BaseMSSQL):
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+    def _initialize_source_connection(self):
+        BaseMSSQL.__init__(self, self.source_uri)
+    
+    def read_table(self, collection_name: str):
+        return BaseMSSQL.read_table(self, collection_name)
+    
+    def get_tables(self):
+        return BaseMSSQL.get_tables(self)
 
 
-# ========= SQL Server → PostgreSQL =========
-class MSSQLToPostgres(BaseMSSQL):
-    def __init__(self, mssql_uri, pg_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertPostgresSQL(pg_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= SQL Server → SQLite =========
-class MSSQLToSQLite(BaseMSSQL):
-    def __init__(self, mssql_uri, sqlite_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertSQLite(sqlite_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= SQL Server → MariaDB =========
-class MSSQLToMaria(BaseMSSQL):
-    def __init__(self, mssql_uri, maria_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertMariaDB(maria_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= SQL Server → SQL Server =========
-class MSSQLToMSSQL(BaseMSSQL):
+class MSSQLToMySQL(BaseMSSQLMigration):
     def __init__(self, source_uri, target_uri):
-        super().__init__(source_uri)
-        self.inserter = InsertMSSQL(target_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-# ========= SQL Server → Mongo =========
-class MSSQLToMongo(BaseMSSQL):
-    def __init__(self, mssql_uri, mongo_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertMongoDB(mongo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MSSQLToPostgres(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
 
-
-# ========= SQL Server → Oracle =========
-class MSSQLToOracle(BaseMSSQL):
-    def __init__(self, mssql_uri, oracle_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertOracle(oracle_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MSSQLToSQLite(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
 
 
-
-# ========= SQL Server → Redis =========
-class MSSQLToRedis(BaseMSSQL):
-    def __init__(self, mssql_uri, redis_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class MSSQLToMaria(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
 
 
-
-# ========= SQL Server → Dynamo =========
-class MSSQLToDynamoDB(BaseMSSQL):
-    def __init__(self, mssql_uri, dynamo_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertDynamoDB(dynamo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class MSSQLToMSSQL(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
 
 
+class MSSQLToMongo(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMongoDB)
 
-# ========= SQL Server → ElasticSearch =========
-class MSSQLToElastic(BaseMSSQL):
-    def __init__(self, mssql_uri, elastic_uri):
-        super().__init__(mssql_uri)
-        self.inserter = InsertElasticsearch(elastic_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class MSSQLToOracle(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+
+class MSSQLToRedis(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
+
+
+class MSSQLToDynamoDB(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
+
+
+class MSSQLToElastic(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
+
+
+class MSSQLToClickHouse(BaseMSSQLMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)

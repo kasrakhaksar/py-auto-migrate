@@ -1,14 +1,15 @@
 import pandas as pd
 import pymysql
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMariaDB:
+class BaseMariaDB(BaseModel):
     def __init__(self, maria_uri):
-        self.maria_uri = maria_uri
+        super().__init__(maria_uri)
 
     def _parse_maria_uri(self, maria_uri=None):
         if maria_uri is None:
-            maria_uri = self.maria_uri
+            maria_uri = self.uri
         maria_uri = maria_uri.replace("mariadb://", "").replace("mysql://", "")
         user_pass, host_db = maria_uri.split("@")
         user, password = user_pass.split(":")

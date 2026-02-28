@@ -1,16 +1,14 @@
 from py_auto_migrate.base_models.base_mssql import BaseMSSQL
+from py_auto_migrate.insert_models.base import BaseInsert
 
 
-
-class InsertMSSQL(BaseMSSQL):
+class InsertMSSQL(BaseMSSQL, BaseInsert):
     def __init__(self, mssql_uri):
         super().__init__(mssql_uri)
 
     def insert(self, df, table_name):
-
         conn = self._connect()
         if conn is None:
-            print(f"❌ Cannot connect to SQL Server database. Insert aborted.")
             return
 
         cur = conn.cursor()
@@ -27,7 +25,6 @@ class InsertMSSQL(BaseMSSQL):
             f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{table_name}'"
         )
         if cur.fetchone()[0] > 0:
-            print(f"⚠ Table '{table_name}' already exists in SQL Server. Skipping insert.")
             conn.close()
             return
 
@@ -42,5 +39,3 @@ class InsertMSSQL(BaseMSSQL):
         cur.executemany(f"INSERT INTO [{table_name}] VALUES ({placeholders})", df.values.tolist())
         conn.commit()
         conn.close()
-
-        print(f"✅ Inserted {len(df)} rows into SQL Server table '{table_name}'")

@@ -1,23 +1,26 @@
 from mysqlSaver import Connection
 import pandas as pd
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMySQL:
+class BaseMySQL(BaseModel):
     def __init__(self, mysql_uri):
-        self.mysql_uri = mysql_uri
-
+        super().__init__(mysql_uri)
+    
     def _parse_mysql_uri(self, uri=None):
         if uri is None:
-            uri = self.mysql_uri
+            uri = self.uri
         uri = uri.replace("mysql://", "")
         user_pass, host_db = uri.split("@")
         user, password = user_pass.split(":")
         host_port, db_name = host_db.split("/")
+        
         if ":" in host_port:
             host, port = host_port.split(":")
             port = int(port)
         else:
             host, port = host_port, 3306
+            
         return host, port, user, password, db_name
 
     def _connect(self, db_name=None):
@@ -41,6 +44,7 @@ class BaseMySQL:
         data = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         conn.close()
+        
         df = pd.DataFrame(data, columns=columns)
         if df.empty:
             print(f"❌ Table '{table_name}' is empty.")
