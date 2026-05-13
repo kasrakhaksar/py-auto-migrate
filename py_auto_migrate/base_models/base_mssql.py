@@ -1,14 +1,15 @@
 import pyodbc
-import pandas as pd
+import json
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMSSQL:
+class BaseMSSQL(BaseModel):
     def __init__(self, mssql_uri):
-        self.mssql_uri = mssql_uri
+        super().__init__(mssql_uri)
 
     def _parse_mssql_uri(self, uri=None):
         if uri is None:
-            uri = self.mssql_uri
+            uri = self.uri
         uri = uri.replace("mssql://", "")
         if uri.startswith("@") or "@" not in uri:
             if uri.startswith("@"):
@@ -55,6 +56,11 @@ class BaseMSSQL:
 
     def read_table(self, table_name):
         conn = self._connect()
-        df = pd.read_sql(f"SELECT * FROM [{table_name}]", conn)
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM [{table_name}]")
+        rows = cur.fetchall()
+        cur.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
+        columns = [r[0] for r in cur.fetchall()]
         conn.close()
-        return df.fillna(0)
+        data = [dict(zip(columns, row)) for row in rows]
+        return json.dumps(data)

@@ -1,116 +1,128 @@
 <h1 align="center">
-  <strong>𝐏𝐲-𝐀𝐮𝐭𝐨-𝐌𝐢𝐠𝐫𝐚𝐭𝐞</strong>
+  <strong>🚀 Py-Auto-Migrate</strong>
 </h1>
 
 <p align="center">
-  A powerful database migration tool to transfer data (e.g., between MongoDB → MySQL or PostgreSQL and Oracle), with automatic table/database creation, existence checks, and support for full database migrations.
+  <em>The Universal Database Migration Tool</em> <br>
+  <strong>Seamlessly transfer data between any database.
 </p>
 
-[![PyPI](https://img.shields.io/badge/PyPI-Package-blue?logo=pypi)](https://pypi.org/project/py-auto-migrate/) 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/kasrakhaksar/py-auto-migrate)
-[![Stars](https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/stargazers)
-[![Forks](https://img.shields.io/github/forks/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/network/members)
-[![Issues](https://img.shields.io/github/issues/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/pulls) 
-[![Releases](https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=flat-square)](https://github.com/kasrakhaksar/py-auto-migrate/releases)
+<p align="center">
+  <a href="https://pypi.org/project/py-auto-migrate/">
+    <img src="https://img.shields.io/pypi/v/py-auto-migrate?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI&color=blue" alt="PyPI - Version">
+  </a>
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate">
+    <img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github" alt="GitHub Repo">
+  </a>
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/stargazers">
+    <img src="https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=for-the-badge&logo=apachespark&color=yellow" alt="Stars">
+  </a>
+    <a href="https://github.com/kasrakhaksar/py-auto-migrate/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/kasrakhaksar/py-auto-migrate?style=for-the-badge&color=brightgreen" alt="License">
+  </a>
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases">
+      <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=for-the-badge" alt="Latest Release">
+  </a>
+</p>
 
+
+---
+
+## Why Py-Auto-Migrate?
+
+Migrating data between different database systems is often a tedious and error-prone task. **Py-Auto-Migrate** is here to change that. It's a powerful, flexible, and easy-to-use Python tool that automates the entire process.
+
+-   **Universal Connector**: Supports a vast range of databases, from SQL to NoSQL.
+-   **Zero Configuration**: Point to your source and target, and let the tool handle schema detection, data type mapping, and destination creation.
+-   **Blazing Fast**: Optimized for performance, even with large datasets.
+-   **Safe & Reliable**: Built-in checks ensure data integrity throughout the migration.
 
 
 ---
 
 ## Installation
 
+Get started in seconds with `pip`.
+
 ```bash
 pip install py-auto-migrate
 ```
 
-## Download Shell 
+### Prefer a Standalone Shell?
 
-If you don’t have Python, or you want to use it with the Shell, you can download the dedicated <b>PAM-Shell</b> from the <b>Releases</b> on GitHub repository.
-
-<a href="https://github.com/kasrakhaksar/py-auto-migrate/releases" target="_blank">
-  <img src="https://img.shields.io/badge/-Release-blue?logo=github" />
-</a>
+Don't have Python? No problem! Download the dedicated **PAM-Shell** for your OS from the [Releases page](https://github.com/kasrakhaksar/py-auto-migrate/releases). It's a ready-to-run executable with the same powerful features.
 
 ---
 
+## Quick Start
 
-## Help
-```bash
-py-auto-migrate --help
-```
+Using Py-Auto-Migrate is as simple as running one command.
 
-<p>After installation using pip, open your terminal (command line). This command displays a detailed guide on how to use the package, including available commands, arguments, and examples. It’s the best place to start if you want to quickly understand how to work with py-auto-migrate.</p>
-
-
-<p>‌But in <b>PAM-Shell</b> , you just need to type `help`</p>
-
-
+### Basic Command Structure
 
 ```bash
-py-auto-migrate> help
+py-auto-migrate migrate --source <SOURCE_URI> --target <TARGET_URI>
 ```
 
----
+| Argument       | Description                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `--source`     | **Required.** Connection URI for the source database.                                        |
+| `--target`     | **Required.** Connection URI for the target database.                                        |
+| `--table`      | **Optional.** Migrate a specific table. If omitted, **all** data is migrated.                |
+| `--ai-ask`     | **Optional.** Natural language query for **AI-powered**.                                     |
+| `--ai-model`   | **Optional.** OpenAI model (default: gpt-3.5-turbo).                                         |
 
+### Real-World Examples
 
-## Usage
+**1. Migrate an entire database from MongoDB to MySQL:**
 
 ```bash
-py-auto-migrate migrate --source <source_uri> --target <target_uri> --table <table_name>
+py-auto-migrate migrate \
+  --source "mongodb://user:pass@localhost:27017/source_db" \
+  --target "mysql://user:pass@localhost:3306/target_db"
 ```
-| Argument   | Description                                                                                          |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| --source | Source database URI (e.g., mysql://user:pass@host:3306/dbname)                                         |
-| --target | Target database URI (e.g., oracle://user:password@host:port/service_name)                    |
-| --table  | Optional. Specific table/collection to migrate. If omitted, all tables/collections will be migrated.   |
 
-
-## Example
-
-Example 1:
+**2. Migrate a single PostgreSQL table to a new MongoDB collection:**
 
 ```bash
-py-auto-migrate migrate --source "mongodb://<username>:<password>@<host>:<port>/mydb" --target "mongodb://<username>:<password>@<host>:<port>/mydb2"
+py-auto-migrate migrate \
+  --source "postgresql://user:pass@localhost:5432/mydb" \
+  --target "mongodb://user:pass@localhost:27017/mydb" \ --table users
 ```
 
-Example 2:
+> **The Magic:** If the target database or table doesn't exist, **Py-Auto-Migrate automatically creates it for you!** It intelligently maps source data types to the appropriate target schema.
+
+
+**3. Query using AI (Target must be a relational database):**
 
 ```bash
-py-auto-migrate migrate --source "postgresql://<user>:<password>@<host>:<port>/mydb" --target "mysql://<user>:<password>@<host>:<port>/mydb" --table users
+export OPENAI_API_KEY="your-api-key"
 ```
 
-
-<b>If the database or table does not exist, it will create them for you based on the column types of the DataFrame.</b>
-
-<p>You can also use MongoDB → MongoDB or PostgreSQL → PostgreSQL</p>
+> Before using AI, make sure the **OPENAI_API_KEY** has been exported.
 
 
+```bash
+py-auto-migrate migrate \
+  --source "oracle://user:password@host:port/service_name" \
+  --target "mssql://user:password@host:port/database" \ 
+  --ai-ask "Please select and insert only names that start with 'S', then sort them." /
+  --ai-model "gpt-3.5-turbo"
+```
 
 
 ---
 
 ## Supported Databases
 
-| Database   |
-| ---------- |
-| MySQL      |
-| PostgreSQL |
-| MongoDB    |
-| MariaDB    |
-| Oracle     |
-| Redis      |
-| Elastic Search   |
-| DynamoDB   |
-| SQL Server |
-| SQLite     |
+We support a wide and growing range of databases.
+
+| Category       | Databases                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Relational** | [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/) [![Oracle](https://img.shields.io/badge/Oracle-F80000?style=flat-square&logo=oracle&logoColor=white)](https://www.oracle.com/database/) [![SQL Server](https://img.shields.io/badge/SQL%20Server-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/en-us/sql-server) [![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=mariadb&logoColor=white)](https://mariadb.org/) [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/) |
+| **NoSQL**      | [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/) [![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io/) [![DynamoDB](https://img.shields.io/badge/DynamoDB-4053D6?style=flat-square&logo=amazondynamodb&logoColor=white)](https://aws.amazon.com/dynamodb/) [![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?style=flat-square&logo=elasticsearch&logoColor=white)](https://www.elastic.co/elasticsearch/) |
+| **Analysis**      | [![ClickHouse](https://img.shields.io/badge/ClickHouse-FFCC00?style=flat-square&logo=clickhouse&logoColor=black)](https://clickhouse.com/)                                                                                     |
 
 ---
 
-## Future Plans
-
-| Feature                                      | Status  |
-| -------------------------------------------- | ------- |
-| Support for Elastic Search migrations        |    ✔️   |
-| Index creation on tables/collections         | Planned |
-| Performance optimizations for large datasets | Planned |
+Have a feature request? [Open an issue](https://github.com/kasrakhaksar/py-auto-migrate/issues) and let us know!

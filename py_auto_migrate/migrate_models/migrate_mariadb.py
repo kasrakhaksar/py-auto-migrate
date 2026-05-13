@@ -1,6 +1,6 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_mariadb import BaseMariaDB
 from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
-
 
 from py_auto_migrate.insert_models.insert_mysql import InsertMySQL
 from py_auto_migrate.insert_models.insert_mongodb import InsertMongoDB
@@ -11,179 +11,72 @@ from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
 
-# ========= MariaDB → MySQL =========
-class MariaToMySQL(BaseMariaDB):
-    def __init__(self, maria_uri, mysql_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertMySQL(mysql_uri)
+class BaseMariaMigration(BaseMigration, BaseMariaDB):
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+    def _initialize_source_connection(self):
+        BaseMariaDB.__init__(self, self.source_uri)
+    
+    def read_table(self, collection_name: str):
+        return BaseMariaDB.read_table(self, collection_name)
+    
+    def get_tables(self):
+        return BaseMariaDB.get_tables(self)
 
 
-# ========= MariaDB → PostgreSQL =========
-class MariaToPostgres(BaseMariaDB):
-    def __init__(self, maria_uri, pg_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertPostgresSQL(pg_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= MariaDB → SQLite =========
-class MariaToSQLite(BaseMariaDB):
-    def __init__(self, maria_uri, sqlite_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertSQLite(sqlite_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= MariaDB → MariaDB =========
-class MariaToMaria(BaseMariaDB):
+class MariaToMySQL(BaseMariaMigration):
     def __init__(self, source_uri, target_uri):
-        super().__init__(source_uri)
-        self.inserter = InsertMariaDB(target_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-# ========= MariaDB → Mongo =========
-class MariaToMongo(BaseMariaDB):
-    def __init__(self, maria_uri, mongo_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertMongoDB(mongo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MariaToPostgres(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
 
-# ========= MariaDB → SQL Server =========
-class MariaToMSSQL(BaseMariaDB):
-    def __init__(self, maria_uri, mssql_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertMSSQL(mssql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MariaToSQLite(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
 
 
-
-# ========= MariaDB → Oracle =========
-class MariaToOracle(BaseMariaDB):
-    def __init__(self, maria_uri, oracle_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertOracle(oracle_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MariaToMaria(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
 
 
-
-# ========= MariaDB → Redis =========
-class MariaToRedis(BaseMariaDB):
-    def __init__(self, maria_uri, redis_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class MariaToMongo(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMongoDB)
 
 
-
-# ========= MariaDB → Dynamo =========
-class MariaToDynamoDB(BaseMariaDB):
-    def __init__(self, maria_uri, dynamo_uri):
-        super().__init__(maria_uri)
-        self.inserter = InsertDynamoDB(dynamo_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for table in self.get_tables():
-            print(f"➡ Migrating table: {table}")
-            self.migrate_one(table)
+class MariaToMSSQL(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
 
 
+class MariaToOracle(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
 
 
-# ========= MariaDB → ElasticSearch =========
-class MariaDBToElastic(BaseMariaDB):
-    def __init__(self, dynamo_uri, elastic_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertElasticsearch(elastic_uri)
+class MariaToRedis(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class MariaToDynamoDB(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
+
+
+class MariaToElastic(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
+
+
+class MariaToClickHouse(BaseMariaMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)

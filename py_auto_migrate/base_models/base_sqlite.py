@@ -1,13 +1,14 @@
 import sqlite3
-import pandas as pd
+import json
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseSQLite:
+class BaseSQLite(BaseModel):
     def __init__(self, sqlite_path):
-        self.sqlite_path = sqlite_path
+        super().__init__(sqlite_path)
 
     def _connect(self):
-        return sqlite3.connect(self.sqlite_path)
+        return sqlite3.connect(self.uri)
 
     def get_tables(self):
         conn = self._connect()
@@ -20,8 +21,12 @@ class BaseSQLite:
 
     def read_table(self, table_name):
         conn = self._connect()
-        df = pd.read_sql(f'SELECT * FROM "{table_name}"', conn)
+        cursor = conn.cursor()
+        cursor.execute(f'SELECT * FROM "{table_name}"')
+        rows = cursor.fetchall()
+        cursor.execute(f'PRAGMA table_info("{table_name}")')
+        columns = [col[1] for col in cursor.fetchall()]
+        cursor.close()
         conn.close()
-        if df.empty:
-            print(f"❌ Table '{table_name}' is empty.")
-        return df.fillna(0)
+        data = [dict(zip(columns, row)) for row in rows]
+        return json.dumps(data)

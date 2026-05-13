@@ -46,7 +46,7 @@ def repl():
 
             if cmd.lower() == "help":
                 console.print("""
-[bold cyan]Py-Auto-Migrate Interactive Shell[/bold cyan]
+[bold cyan]PAM Shell[/bold cyan]
 ---------------------------------------------------------
 
 This shell allows you to migrate data between different databases interactively.
@@ -61,13 +61,17 @@ This shell allows you to migrate data between different databases interactively.
   • DynamoDB
   • Redis
   • Elastic Search
+  • Click House
   • SQLite
 
 [bold green]Available Commands:[/bold green]
-  [command]migrate --source "<uri>" --target "<uri>" [--table <name>][/command]
+  [command]migrate --source "<uri>" --target "<uri>" [/command]
       → Migrate data from one database to another.
         Use [--table] to migrate a single table or collection (optional).
-
+  
+  [command]migrate --source "<uri>" --target "<uri>" --ai-ask "<query>" [/command]
+      → Use AI to intelligently filter/transform data during migration.
+        Use [--ai-model] to specify OpenAI model (default: gpt-3.5-turbo).
 
 [bold green]Connection URI Examples:[/bold green]
   PostgreSQL:
@@ -87,7 +91,6 @@ This shell allows you to migrate data between different databases interactively.
     redis://[:password]@<host>:<port>/<db>
     redis://<host>:<port>/<db>
 
-
   SQL Server (SQL Auth):
     mssql://<user>:<password>@<host>:<port>/<database>
   SQL Server (Windows Auth):
@@ -97,11 +100,15 @@ This shell allows you to migrate data between different databases interactively.
     oracle://<user>:<password>@<host>:<port>/<service_name>
                               
   DynamoDB:
-    dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<table>?region=<region>
+    dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<database>?region=<region>
                               
 
   Elastic Search:
-    elasticsearch://username:password@localhost:9200
+    elasticsearch://<username>:<password>@<localhost>:<port>
+
+                                                  
+  Click House:
+    clickhouse://<user>:<password>@<host>:<port>/<database>
                               
   SQLite:
     sqlite:///<path_to_sqlite_file>
@@ -113,10 +120,24 @@ This shell allows you to migrate data between different databases interactively.
   ➤ Migrate one table only:
     [command]migrate --source "sqlite:///C:/data/mydb.sqlite" --target "postgresql://user:pass@localhost:5432/db" --table customers[/command]
 
-                              
+  ➤ AI-powered migration (intelligent filtering):
+    [command]migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db" --ai-ask "only users older than 30 and index by name"[/command]
+
+  ➤ AI with custom model:
+    [command]migrate --source "mongodb://localhost:27017/mydb" --target "postgresql://user:pass@localhost:5432/db" --table "products" --ai-ask "only products with price > 100" --ai-model "gpt-4"[/command]
+
+[bold green]AI-Powered Features:[/bold green]
+  • Target must be a relational database
+  • Natural language query support
+  • Intelligent data filtering
+  • Smart transformations
+  • Multi-model support (GPT-3.5, GPT-4, etc.)
+
 [bold green]Notes:[/bold green]
   • Table/collection names are case-sensitive.
   • Existing tables in target databases will NOT be replaced.
+  • AI features require OpenAI API key to be set in environment variable OPENAI_API_KEY
+  • For AI-powered migrations, the source database must support data reading operations
 
 ---------------------------------------------------------
 Type [command]exit[/command] to leave this shell.

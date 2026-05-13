@@ -1,14 +1,15 @@
-import pandas as pd
 import pymysql
+import json
+from py_auto_migrate.base_models.base import BaseModel
 
 
-class BaseMariaDB:
+class BaseMariaDB(BaseModel):
     def __init__(self, maria_uri):
-        self.maria_uri = maria_uri
+        super().__init__(maria_uri)
 
     def _parse_maria_uri(self, maria_uri=None):
         if maria_uri is None:
-            maria_uri = self.maria_uri
+            maria_uri = self.uri
         maria_uri = maria_uri.replace("mariadb://", "").replace("mysql://", "")
         user_pass, host_db = maria_uri.split("@")
         user, password = user_pass.split(":")
@@ -34,6 +35,11 @@ class BaseMariaDB:
 
     def read_table(self, table_name):
         conn = self._connect()
-        df = pd.read_sql(f"SELECT * FROM `{table_name}`", conn)
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM `{table_name}`")
+        rows = cur.fetchall()
+        cur.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
+        columns = [r[0] for r in cur.fetchall()]
         conn.close()
-        return df.fillna(0)
+        data = [dict(zip(columns, row)) for row in rows]
+        return json.dumps(data)

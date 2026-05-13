@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='py_auto_migrate',
-    version='0.2.5',
+    version='0.4.5',
     author='Kasra Khaksar',
     author_email='kasrakhaksar17@gmail.com',
     description='A Tool For Transferring Data, Tables, And Datasets Between Different Databases.',
@@ -15,8 +15,9 @@ setup(
     packages=find_packages(include=["py_auto_migrate", "py_auto_migrate.*"]),
     python_requires='>=3.11',
     install_requires=[
-        'pandas',
-        'mysqlSaver',
+        'openai',
+        'requests',
+        'pymysql',
         'pymongo',
         'click',
         'pyodbc',
@@ -24,7 +25,8 @@ setup(
         'oracledb',
         'redis',
         'boto3',
-        'elasticsearch'
+        'elasticsearch',
+        'clickhouse_driver',
     ],
     entry_points={
         'console_scripts': [

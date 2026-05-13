@@ -1,3 +1,4 @@
+from py_auto_migrate.migrate_models.base import BaseMigration
 from py_auto_migrate.base_models.base_dynamodb import BaseDynamoDB
 from py_auto_migrate.insert_models.insert_dynamodb import InsertDynamoDB
 
@@ -10,175 +11,72 @@ from py_auto_migrate.insert_models.insert_oracle import InsertOracle
 from py_auto_migrate.insert_models.insert_redis import InsertRedis
 from py_auto_migrate.insert_models.insert_mariadb import InsertMariaDB
 from py_auto_migrate.insert_models.insert_elasticsearch import InsertElasticsearch
+from py_auto_migrate.insert_models.insert_clickhouse import InsertClickHouse
 
 
-# ========= Dynamo → MongoDB =========
-class DynamoToMongo(BaseDynamoDB):
-    def __init__(self, dynamo_uri, mongo_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertMongoDB(mongo_uri)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
+class BaseDynamoMigration(BaseMigration, BaseDynamoDB):
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+    def _initialize_source_connection(self):
+        BaseDynamoDB.__init__(self, self.source_uri)
+    
+    def read_table(self, collection_name: str):
+        return BaseDynamoDB.read_table(self, collection_name)
+    
+    def get_tables(self):
+        return BaseDynamoDB.get_tables(self)
 
 
-# ========= Dynamo → MySQL =========
-class DynamoToMySQL(BaseDynamoDB):
-    def __init__(self, dynamo_uri, mysql_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertMySQL(mysql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → PostgreSQL =========
-class DynamoToPostgres(BaseDynamoDB):
-    def __init__(self, dynamo_uri, pg_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertPostgresSQL(pg_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → SQLite =========
-class DynamoToSQLite(BaseDynamoDB):
-    def __init__(self, dynamo_uri, sqlite_path):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertSQLite(sqlite_path)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → MSSQL =========
-class DynamoToMSSQL(BaseDynamoDB):
-    def __init__(self, dynamo_uri, mssql_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertMSSQL(mssql_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → Oracle =========
-class DynamoToOracle(BaseDynamoDB):
-    def __init__(self, dynamo_uri, oracle_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertOracle(oracle_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → Redis =========
-class DynamoToRedis(BaseDynamoDB):
-    def __init__(self, dynamo_uri, redis_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertRedis(redis_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → MariaDB =========
-class DynamoToMaria(BaseDynamoDB):
-    def __init__(self, dynamo_uri, maria_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertMariaDB(maria_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
-
-
-# ========= Dynamo → Dynamo =========
-class DynamoToDynamo(BaseDynamoDB):
+class DynamoToMongo(BaseDynamoMigration):
     def __init__(self, source_uri, target_uri):
-        super().__init__(source_uri)
-        self.inserter = InsertDynamoDB(target_uri)
-
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
-
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+        super().__init__(source_uri, target_uri, InsertMongoDB)
 
 
+class DynamoToMySQL(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMySQL)
 
 
-# ========= Dynamo → ElasticSearch =========
-class DynamoToElastic(BaseDynamoDB):
-    def __init__(self, dynamo_uri, elastic_uri):
-        super().__init__(dynamo_uri)
-        self.inserter = InsertElasticsearch(elastic_uri)
+class DynamoToPostgres(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertPostgresSQL)
 
-    def migrate_one(self, table_name):
-        df = self.read_table(table_name)
-        if not df.empty:
-            self.inserter.insert(df, table_name)
 
-    def migrate_all(self):
-        for t in self.get_tables():
-            print(f"➡ Migrating table: {t}")
-            self.migrate_one(t)
+class DynamoToSQLite(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertSQLite)
+
+
+class DynamoToMSSQL(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMSSQL)
+
+
+class DynamoToOracle(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertOracle)
+
+
+class DynamoToRedis(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertRedis)
+
+
+class DynamoToMaria(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertMariaDB)
+
+
+class DynamoToDynamo(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertDynamoDB)
+
+
+class DynamoToElastic(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertElasticsearch)
+
+
+class DynamoToClickHouse(BaseDynamoMigration):
+    def __init__(self, source_uri, target_uri):
+        super().__init__(source_uri, target_uri, InsertClickHouse)
