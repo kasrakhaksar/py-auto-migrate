@@ -127,7 +127,7 @@ def migrate(source, target, table, ai_ask, ai_model):
         return
 
     if ai_ask and target_type not in AI_SUPPORTED_DATABASES:
-        click.echo(f"❌ Sorry, AI queries are not supported for {source_type.upper()} database.")
+        click.echo(f"❌ Sorry, AI queries are not supported for {target_type.upper()} database.")
         click.echo(f"✅ AI supported databases: {', '.join(AI_SUPPORTED_DATABASES)}")
         return
 

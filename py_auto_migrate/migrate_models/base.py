@@ -24,18 +24,20 @@ class BaseMigration(ABC):
         pass
     
     def migrate_one(self, table_name: str) -> None:
-        df = self.read_table(table_name)
-        if hasattr(df, 'empty') and not df.empty:
-            print(f"  📊 Migrating {len(df)} rows from {table_name}")
-            self.inserter.insert(df, table_name)
+
+        data = self.read_table(table_name)
+        
+        if data and len(data) > 0:
+            print(f"  📊 Migrating {table_name}")
+            self.inserter.insert(data, table_name)
             print(f"  ✅ Completed: {table_name}")
         else:
             print(f"  ⚠️ No data in {table_name}")
-    
+        
     def migrate_all(self) -> None:
 
         tables = self.get_tables()
-        print(f"📋 Found {len(tables)} tables/collections to migrate")
+        print(f"📋 Found {len(tables)} tables to migrate")
         
         for i, table in enumerate(tables, 1):
             print(f"\n➡ [{i}/{len(tables)}] Migrating: {table}")
