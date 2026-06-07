@@ -47,7 +47,7 @@ class InsertSQLite(BaseSQLite, BaseInsert):
 
         if ai_ask and ai_model:
             ai_query_obj = AIQuery(ai_ask, table_name, 'sqlite', column_defs)
-            generated_query = ai_query_obj.generate(model=ai_model)
+            generated_query = ai_query_obj.sql_generate(model=ai_model)
             
             conn = self._connect()
             if conn is None:

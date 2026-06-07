@@ -49,7 +49,7 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
         
         if ai_ask and ai_model:
             ai_query_obj = AIQuery(ai_ask, table_name, 'postgresql', column_defs)
-            generated_query = ai_query_obj.generate(model=ai_model)
+            generated_query = ai_query_obj.sql_generate(model=ai_model)
             
             conn = self._connect()
             if conn is None:
@@ -58,7 +58,6 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
             try:
                 cur.execute(generated_query)
                 conn.commit()
-                print(f"AI-generated INSERT query executed successfully: {generated_query}")
             except Exception as e:
                 print(f"Error executing AI query: {e}")
                 raise

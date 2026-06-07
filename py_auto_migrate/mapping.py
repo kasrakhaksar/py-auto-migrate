@@ -16,7 +16,7 @@ ALL_DATABASES_LIST = ["mongodb://", "mysql://", "mariadb://", "postgresql://",
                    "redis://", "dynamodb://", "sqlite://", "clickhouse://"]
 
 
-AI_SUPPORTED_DATABASES = ['postgresql', 'mysql', 'mariadb', 'sqlite', 'oracle' , 'mssql']
+AI_SUPPORTED_DATABASES = ['postgresql://', 'mysql://', 'mariadb://', 'sqlite://', 'oracle://' , 'mssql://']
 
 
 MIGRATION_MAP = {

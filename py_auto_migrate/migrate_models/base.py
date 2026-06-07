@@ -23,13 +23,13 @@ class BaseMigration(ABC):
     def get_tables(self) -> list:
         pass
     
-    def migrate_one(self, table_name: str) -> None:
+    def migrate_one(self, table_name: str, ai_ask=None, ai_model=None ) -> None:
 
         data = self.read_table(table_name)
-        
+
         if data and len(data) > 0:
             print(f"  📊 Migrating {table_name}")
-            self.inserter.insert(data, table_name)
+            self.inserter.insert(data, table_name, ai_ask, ai_model)
             print(f"  ✅ Completed: {table_name}")
         else:
             print(f"  ⚠️ No data in {table_name}")

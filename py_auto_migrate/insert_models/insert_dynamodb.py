@@ -50,7 +50,7 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
             ai_query_obj = AIQuery(ai_ask, table_name, 'dynamodb', columns)
             
             try:
-                generated_query = ai_query_obj.generate(model=ai_model)
+                generated_query = ai_query_obj.nosql_generate(model=ai_model)
             except Exception as e:
                 print(f"Error processing AI query: {e}")
                 raise
