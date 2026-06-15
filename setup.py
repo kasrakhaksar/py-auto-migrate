@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='py_auto_migrate',
-    version='0.4.7',
+    version='0.5.8',
     author='Kasra Khaksar',
     author_email='kasrakhaksar17@gmail.com',
     description='A Powerful Database Migration Tool To Transfer Data.',
@@ -27,7 +27,19 @@ setup(
         'boto3',
         'elasticsearch',
         'clickhouse_driver',
+        'uvicorn',
+        'fastapi',
+        'python-multipart',
+        'jinja2'
     ],
+    package_data={
+        'py_auto_migrate': [
+            'dashboard/templates/*.html',
+            'dashboard/static/css/*.css',
+            'dashboard/static/js/*.js',
+        ],
+    },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'py-auto-migrate=py_auto_migrate.cli:main',

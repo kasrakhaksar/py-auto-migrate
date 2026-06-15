@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}<title>Py Auto Migrate - Migration Dashboard</title>{% endblock title %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', path='css/migrate.css') }}">{% endblock css %}
+
+{% block migrate %}
+
+    <div class="migration-card mt-4">
+
+        <div class="card-header-custom">
+            <span class="hero-badge">DATABASE MIGRATION ENGINE</span>
+            <h1>Start New Migration</h1>
+            <p>
+                Configure source and target databases independently.
+            </p>
+        </div>
+
+        <div class="card-body">
+
+            <form id="migrateForm" method="post" action="/migrate">
+
+                <div class="section-title">Source Database</div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <label>Source Type</label>
+                        <select id="source" name="source" class="form-select">
+                            <option disabled selected>Select source</option>
+                            {% for db in databases %}
+                            <option value="{{ db }}">{{ db|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 field-s field-host">
+                        <label>Host</label>
+                        <input name="source_host" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-port">
+                        <label>Port</label>
+                        <input name="source_port" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-db_name">
+                        <label>Database</label>
+                        <input name="source_db_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-username">
+                        <label>Username</label>
+                        <input name="source_username" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-password">
+                        <label>Password</label>
+                        <input type="password" name="source_password" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-file_path">
+                        <label>SQLite File</label>
+                        <input name="source_file_path" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-service_name">
+                        <label>Service Name (Oracle)</label>
+                        <input name="source_service_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-aws_access_key">
+                        <label>AWS Access Key</label>
+                        <input name="source_aws_access_key" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-aws_secret_key">
+                        <label>AWS Secret Key</label>
+                        <input name="source_aws_secret_key" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-s field-host">
+                        <label>Host</label>
+                        <input name="source_host" class="form-control" placeholder="dynamodb.amazonaws.com">
+                    </div>
+
+                    <div class="col-md-6 field-s field-port">
+                        <label>Port</label>
+                        <input name="source_port" class="form-control" placeholder="443">
+                    </div>
+
+                    <div class="col-md-6 field-s field-region">
+                        <label>Region</label>
+                        <input name="source_region" class="form-control" placeholder="us-east-1">
+                    </div>
+
+                </div>
+
+                <div class="migration-divider my-5">
+                    <span>➡️ MIGRATION FLOW ➡️</span>
+                </div>
+
+                <div class="section-title">Target Database</div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <label>Target Type</label>
+                        <select id="target" name="target" class="form-select">
+                            <option disabled selected>Select target</option>
+                            {% for db in databases %}
+                            <option value="{{ db }}">{{ db|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 field-t field-host">
+                        <label>Host</label>
+                        <input name="target_host" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-port">
+                        <label>Port</label>
+                        <input name="target_port" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-db_name">
+                        <label>Database</label>
+                        <input name="target_db_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-username">
+                        <label>Username</label>
+                        <input name="target_username" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-password">
+                        <label>Password</label>
+                        <input type="password" name="target_password" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-file_path">
+                        <label>SQLite File</label>
+                        <input name="target_file_path" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-service_name">
+                        <label>Service Name</label>
+                        <input name="target_service_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-aws_access_key">
+                        <label>AWS Access Key</label>
+                        <input name="target_aws_access_key" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-aws_secret_key">
+                        <label>AWS Secret Key</label>
+                        <input name="target_aws_secret_key" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 field-t field-host">
+                        <label>Host</label>
+                        <input name="target_host" class="form-control" placeholder="dynamodb.amazonaws.com">
+                    </div>
+
+                    <div class="col-md-6 field-t field-port">
+                        <label>Port</label>
+                        <input name="target_port" class="form-control" placeholder="443">
+                    </div>
+
+                    <div class="col-md-6 field-t field-region">
+                        <label>Region</label>
+                        <input name="target_region" class="form-control" placeholder="us-east-1">
+                    </div>
+
+                </div>
+
+
+                <div class="mt-5 section-title">AI Assisted Migration</div>
+
+                <div class="ai-box">
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label>AI Model</label>
+                            <input name="ai_model" class="form-control" placeholder="gpt-4o">
+                        </div>
+
+                        <div class="col-12">
+                            <label>AI Query</label>
+                            <textarea name="ai_ask" rows="5" class="form-control"></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <button class="btn btn-migrate w-100 mt-5 text-light">
+                    Launch Migration
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+
+
+    {% block js %}<script src="{{ url_for('static', path='js/migrate.js') }}"></script>{% endblock js %}
+    
+{% endblock migrate %}

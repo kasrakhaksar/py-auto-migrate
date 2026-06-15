@@ -1,0 +1,285 @@
+
+:root{
+    --bg:#050816;
+    --card:#0f172a;
+    --border:#1e293b;
+    --primary:#3b82f6;
+    --secondary:#06b6d4;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter,Segoe UI,sans-serif;
+    padding:50px 15px;
+    position:relative;
+    overflow-x:hidden;
+}
+
+
+body::before{
+    content:"";
+    position:fixed;
+    width:700px;
+    height:700px;
+    top:-250px;
+    left:-250px;
+    background:radial-gradient(circle,#2563eb40,transparent 70%);
+    pointer-events:none;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    width:700px;
+    height:700px;
+    bottom:-250px;
+    right:-250px;
+    background:radial-gradient(circle,#06b6d440,transparent 70%);
+    pointer-events:none;
+}
+
+
+.migration-card{
+
+    max-width:1200px;
+    margin:auto;
+
+    background:rgba(15,23,42,.78);
+
+    backdrop-filter:blur(25px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:32px;
+
+    overflow:hidden;
+
+    box-shadow:
+    0 20px 80px rgba(0,0,0,.45);
+}
+
+
+.card-header-custom{
+
+    background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #06b6d4
+    );
+
+    padding:40px;
+}
+
+.card-header-custom h1{
+    font-size:3rem;
+    font-weight:900;
+    margin-bottom:15px;
+}
+
+.card-header-custom p{
+    font-size:1.1rem;
+    opacity:.95;
+    max-width:700px;
+}
+
+.hero-badge{
+    background:white;
+    color:#0f172a;
+    padding:10px 18px;
+    border-radius:999px;
+    display:inline-block;
+    font-size:.85rem;
+    font-weight:700;
+    margin-bottom:20px;
+}
+
+
+.card-body{
+    padding:50px;
+}
+
+
+.section-title{
+    color:#60a5fa;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:.85rem;
+    font-weight:700;
+    margin-bottom:25px;
+}
+
+
+.form-label{
+    color:var(--muted);
+    font-weight:600;
+}
+
+.form-control,
+.form-select{
+
+    background:#020617 !important;
+
+    color:white !important;
+
+    border:1px solid var(--border) !important;
+
+    border-radius:16px;
+
+    min-height:58px;
+
+    transition:.3s;
+}
+
+.form-control::placeholder{
+    color:#64748b;
+}
+
+.form-control:focus,
+.form-select:focus{
+
+    border-color:#3b82f6 !important;
+
+    box-shadow:
+    0 0 0 4px rgba(59,130,246,.15) !important;
+}
+
+.input-group-text{
+
+    background:#020617;
+
+    color:#60a5fa;
+
+    border:1px solid var(--border);
+
+    border-radius:16px 0 0 16px;
+}
+
+
+.ai-box{
+
+    background:rgba(59,130,246,.06);
+
+    border:1px solid rgba(59,130,246,.15);
+
+    border-radius:20px;
+
+    padding:25px;
+}
+
+
+.btn-migrate{
+
+    height:70px;
+
+    border:none;
+
+    border-radius:18px;
+
+    font-size:1.15rem;
+
+    font-weight:800;
+
+    background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #06b6d4
+    );
+
+    transition:.35s;
+}
+
+.btn-migrate:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:
+    0 15px 40px rgba(37,99,235,.35);
+}
+
+
+.stat-card{
+
+    background:#020617;
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    padding:20px;
+
+    text-align:center;
+}
+
+.stat-card i{
+    font-size:2rem;
+    color:#60a5fa;
+}
+
+.stat-card h4{
+    margin-top:10px;
+    font-weight:800;
+}
+
+.stat-card p{
+    color:var(--muted);
+    margin-bottom:0;
+}
+
+
+.alert{
+    border-radius:16px;
+}
+
+textarea{
+    resize:none;
+}
+
+@media(max-width:768px){
+
+    .card-header-custom{
+        padding:40px 25px;
+    }
+
+    .card-header-custom h1{
+        font-size:2rem;
+    }
+
+    .card-body{
+        padding:25px;
+    }
+
+}
+
+
+
+.migration-divider{
+    text-align:center;
+    font-weight:600;
+    color:#888;
+    position:relative;
+}
+
+.migration-divider:before,
+.migration-divider:after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:40%;
+    height:1px;
+    background:#444;
+}
+
+.migration-divider:before{ left:0; }
+.migration-divider:after{ right:0; }

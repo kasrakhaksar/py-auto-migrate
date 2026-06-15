@@ -18,6 +18,20 @@ style = Style.from_dict({
 })
 
 
+
+def run_dashboard(args):
+    try:
+        from py_auto_migrate.cli import main as cli_main
+        
+        cmd_args = ['dashboard']
+        cmd_args.extend(args)
+    
+        cli_main.main(args=cmd_args, prog_name="py-auto-migrate", standalone_mode=False)
+    except Exception as e:
+        console.print(f"❌ [error]Failed to start dashboard: {escape(str(e))}[/error]")
+
+
+
 def repl():
     console.print("🚀 [info]Welcome to Py-Auto-Migrate Shell[/info]")
     console.print(
@@ -133,6 +147,33 @@ This shell allows you to migrate data between different databases interactively.
   • Smart transformations
   • Multi-model support (GPT-3.5, GPT-4, etc.)
 
+                              
+[bold green]Dashboard:[/bold green]
+  For easier migration operations without using the command line, PAM provides a dedicated web dashboard.
+
+  [bold]Dashboard Usage:[/bold]
+    [command]dashboard[/command]
+
+                              
+  [bold]Default dashboard URL:[/bold]
+    http://localhost:8123
+                              
+
+  [bold]Dashboard Usage:[/bold]
+    [command]dashboard --host "localhost" --port 8000[/command]
+                            
+
+
+  [bold]Dashboard Features:[/bold]
+    • Easily configure source and target connections
+    • Select specific tables for migration
+    • View logs and errors in real-time
+    • Run migrations with a single click
+    • AI query support in a graphical interface
+    • Monitor migration progress
+    • Manage multiple migration jobs
+
+
 [bold green]Notes:[/bold green]
   • Table/collection names are case-sensitive.
   • Existing tables in target databases will NOT be replaced.
@@ -149,12 +190,15 @@ Type [command]exit[/command] to leave this shell.
                 continue
 
             args = shlex.split(cmd)
+            
             if args[0] == "migrate":
                 migrate.main(
                     args=args[1:],
                     prog_name="py-auto-migrate",
                     standalone_mode=False
                 )
+            elif args[0] == "dashboard":
+                run_dashboard(args[1:])
             else:
                 console.print(
                     f"❌ [error]Unknown command: {escape(args[0])}[/error]"

@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}<title>Py Auto Migrate</title>{% endblock title %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">{% endblock css %}
+
+{% block index %}
+
+	<section class="hero">
+
+		<div class="container position-relative">
+
+			<div class="row align-items-center">
+
+				<div class="col-lg-7">
+
+					<span class="badge badge-custom px-3 py-2 mb-4">
+						Universal Database Migration Package
+					</span>
+
+					<h1 class="display-1 fw-bold mb-4">
+						Move Data
+						<span class="gradient-text">
+							Anywhere
+						</span>
+					</h1>
+
+					<p class="lead text-secondary mb-4">
+						Py Auto Migrate is a powerful migration engine that transfers data
+						between SQL, NoSQL and analytical databases with automatic schema
+						mapping, validation and AI-assisted transformations.
+					</p>
+
+					<div class="d-flex flex-wrap gap-3">
+
+						<a href="/migrate" class="btn btn-primary btn-lg">
+							Get Started
+						</a>
+
+						<a href="https://pypi.org/project/py-auto-migrate/" target="_blank" class="btn btn-outline-light btn-lg">
+							PyPI Package
+						</a>
+
+					</div>
+
+				</div>
+
+				<div class="col-lg-5">
+
+					<div class="glass rounded-4 p-4">
+
+						<div class="code-block">
+
+							$ pip install py-auto-migrate
+
+							<br><br>
+
+							✓ schema detected<br>
+							✓ destination created<br>
+							✓ migration completed
+
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<section class="py-5">
+
+		<div class="container">
+
+			<div class="stats p-5">
+
+				<div class="row text-center">
+
+					<div class="col-md-4">
+						<div class="stat-number">10+</div>
+						<div class="text-secondary">Database Engines</div>
+					</div>
+
+					<div class="col-md-4">
+						<div class="stat-number">1</div>
+						<div class="text-secondary">Migration Command</div>
+					</div>
+
+					<div class="col-md-4">
+						<div class="stat-number">0</div>
+						<div class="text-secondary">Manual Mapping Required</div>
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<section id="features" class="py-5">
+
+		<div class="container">
+
+			<div class="text-center mb-5">
+
+				<h2 class="section-title">
+					Built For Modern Data Teams
+				</h2>
+
+				<p class="section-sub">
+					Everything needed to migrate, transform and synchronize data
+					across heterogeneous database systems.
+				</p>
+
+			</div>
+
+			<div class="row g-4">
+
+				<div class="col-lg-3">
+					<div class="feature-card">
+						<div class="feature-icon">
+							<i class="bi bi-globe2"></i>
+						</div>
+						<h4 class="mt-3">Universal Connectivity</h4>
+						<p class="text-secondary">
+							Relational, NoSQL and analytics databases supported.
+						</p>
+					</div>
+				</div>
+
+				<div class="col-lg-3">
+					<div class="feature-card">
+						<div class="feature-icon">
+							<i class="bi bi-lightning-charge-fill"></i>
+						</div>
+						<h4 class="mt-3">Automatic Mapping</h4>
+						<p class="text-secondary">
+							Detect structures and build compatible destinations.
+						</p>
+					</div>
+				</div>
+
+				<div class="col-lg-3">
+					<div class="feature-card">
+						<div class="feature-icon">
+							<i class="bi bi-cpu-fill"></i>
+						</div>
+						<h4 class="mt-3">AI Assisted</h4>
+						<p class="text-secondary">
+							Transform data using natural language instructions.
+						</p>
+					</div>
+				</div>
+
+				<div class="col-lg-3">
+					<div class="feature-card">
+						<div class="feature-icon">
+							<i class="bi bi-shield-check"></i>
+						</div>
+						<h4 class="mt-3">Safe Migration</h4>
+						<p class="text-secondary">
+							Validation checks preserve integrity throughout transfers.
+						</p>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<section id="docs" class="docs-section">
+
+		<div class="container">
+
+			<div class="row align-items-start">
+
+				<div class="col-lg-3">
+
+					<div class="nav flex-column nav-pills docs-nav">
+
+						<button class="nav-link active fw-bold"
+							data-bs-toggle="pill"
+							data-bs-target="#installation">
+							Installation
+						</button>
+
+						<button class="nav-link fw-bold"
+							data-bs-toggle="pill"
+							data-bs-target="#migration">
+							Migration
+						</button>
+
+						<button class="nav-link fw-bold"
+							data-bs-toggle="pill"
+							data-bs-target="#single-table">
+							Single Table
+						</button>
+
+						<button class="nav-link fw-bold"
+							data-bs-toggle="pill"
+							data-bs-target="#ai-query">
+							AI Query
+						</button>
+
+					</div>
+
+				</div>
+
+				<div class="col-lg-9">
+
+					<div class="tab-content docs-content">
+
+						<div class="tab-pane fade show active" id="installation">
+
+							<h2 class="docs-title">Installation</h2>
+
+							<div class="code-block">
+								<button class="copy-btn">Copy</button>
+
+								<pre><code>pip install py-auto-migrate</code></pre>
+							</div>
+
+						</div>
+
+						<div class="tab-pane fade" id="migration">
+
+							<h2 class="docs-title">Migrate Entire Database</h2>
+
+							<div class="code-block">
+								<button class="copy-btn">Copy</button>
+
+								<pre><code>py-auto-migrate migrate \
+    --source mongodb://user:pass@localhost:27017/source_db \
+    --target mysql://user:pass@localhost:3306/target_db</code></pre>
+
+							</div>
+
+						</div>
+
+						<div class="tab-pane fade" id="single-table">
+
+							<h2 class="docs-title">Single Table Migration</h2>
+
+							<div class="code-block">
+								<button class="copy-btn">Copy</button>
+
+								<pre><code>py-auto-migrate migrate \
+    --source postgresql://user:pass@localhost:5432/mydb \
+    --target mongodb://user:pass@localhost:27017/mydb \
+    --table users</code></pre>
+
+							</div>
+
+						</div>
+
+						<div class="tab-pane fade" id="ai-query">
+
+							<h2 class="docs-title">AI Powered Migration</h2>
+
+							<div class="code-block">
+								<button class="copy-btn">Copy</button>
+
+								<pre><code>py-auto-migrate migrate \
+    --source oracle://user:password@host:port/service_name \
+    --target mssql://user:password@host:port/database \
+    --ai-ask "Please select and insert only names that start with 'S', then sort them."</code></pre>
+
+							</div>
+
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<section id="databases" class="py-5">
+
+		<div class="container">
+
+			<div class="text-center mb-5">
+
+				<h2 class="section-title">
+					Supported Databases
+				</h2>
+
+			</div>
+
+			<div class="row g-4">
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-database-fill"></i>
+						<h5 class="mt-3">MySQL</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-box"></i>
+						<h5 class="mt-3">MongoDB</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-server"></i>
+						<h5 class="mt-3">PostgreSQL</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-lightning-fill"></i>
+						<h5 class="mt-3">Redis</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-hdd-network"></i>
+						<h5 class="mt-3">Oracle</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-windows"></i>
+						<h5 class="mt-3">SQL Server</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-server"></i>
+						<h5 class="mt-3">MariaDB</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-speedometer2"></i>
+						<h5 class="mt-3">ClickHouse</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-cloud"></i>
+						<h5 class="mt-3">DynamoDB</h5>
+					</div>
+				</div>
+
+				<div class="col-md-3">
+					<div class="database-card">
+						<i class="bi bi-database-fill"></i>
+						<h5 class="mt-3">SQLite</h5>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+
+	{% block js %}<script src="{{ url_for('static', path='js/index.js') }}"></script>{% endblock js %}
+
+{% endblock index %}

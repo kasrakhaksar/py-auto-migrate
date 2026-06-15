@@ -110,8 +110,46 @@ py-auto-migrate migrate \
   --ai-model "gpt-3.5-turbo"
 ```
 
+---
+
+### Dashboard
+
+For an even easier and more visual migration experience, Py-Auto-Migrate includes a dedicated web dashboard.
+
+
+**Usage:**
+
+```bash
+py-auto-migrate dashboard
+```
+
+**Default Dashboard URL:**
+
+```bash
+http://localhost:8123
+```
+
+
+or :
+
+```bash
+py-auto-migrate dashboard --host "localhost" --port 8000
+```
+
+
+**Features:**
+
+- **Visual Interface** – No need to memorize commands or URIs  
+- **Connection Builder** – Easily build source/target URIs with form inputs  
+- **Table Selection** – Choose specific tables or migrate all with checkboxes  
+- **Real-time Logs** – Watch migration progress and errors live  
+- **AI Query UI** – Use natural language queries with a simple text box  
+- **Job Management** – Run, monitor, and manage multiple migration jobs  
+- **One-Click Migrate** – Start migrations with a single button click  
 
 ---
+
+
 
 ## Supported Databases
 
