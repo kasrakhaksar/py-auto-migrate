@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='py_auto_migrate',
-    version='0.5.8',
+    version='0.5.9',
     author='Kasra Khaksar',
     author_email='kasrakhaksar17@gmail.com',
     description='A Powerful Database Migration Tool To Transfer Data.',

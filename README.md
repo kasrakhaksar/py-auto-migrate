@@ -1,5 +1,5 @@
 <h1 align="center">
-  <strong>🚀 Py-Auto-Migrate</strong>
+  <strong>Py-Auto-Migrate</strong>
 </h1>
 
 <p align="center">
@@ -72,7 +72,7 @@ py-auto-migrate migrate --source <SOURCE_URI> --target <TARGET_URI>
 | `--ai-ask`     | **Optional.** Natural language query for **AI-powered**.                                     |
 | `--ai-model`   | **Optional.** OpenAI model (default: gpt-3.5-turbo).                                         |
 
-### Real-World Examples
+### Examples
 
 **1. Migrate an entire database from MongoDB to MySQL:**
 
@@ -112,7 +112,7 @@ py-auto-migrate migrate \
 
 ---
 
-### Dashboard
+## Dashboard
 
 For an even easier and more visual migration experience, Py-Auto-Migrate includes a dedicated web dashboard.
 
