@@ -9,22 +9,25 @@
 
 <p align="center">
   <a href="https://pypi.org/project/py-auto-migrate/">
-    <img src="https://img.shields.io/pypi/v/py-auto-migrate?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI&color=blue" alt="PyPI - Version">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://pypi.org/pypi/py-auto-migrate/json&query=info.version&label=PyPI&logo=pypi&style=for-the-badge&logoColor=white&color=blue" alt="PyPI - Version">
   </a>
+
   <a href="https://github.com/kasrakhaksar/py-auto-migrate">
-    <img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github" alt="GitHub Repo">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://api.github.com/repos/kasrakhaksar/py-auto-migrate&query=name&label=GitHub&logo=github&style=for-the-badge&color=181717" alt="GitHub Repo">
   </a>
+
   <a href="https://github.com/kasrakhaksar/py-auto-migrate/stargazers">
-    <img src="https://img.shields.io/github/stars/kasrakhaksar/py-auto-migrate?style=for-the-badge&logo=apachespark&color=yellow" alt="Stars">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://api.github.com/repos/kasrakhaksar/py-auto-migrate&query=stargazers_count&label=Stars&logo=github&style=for-the-badge&color=yellow" alt="Stars">
   </a>
-    <a href="https://github.com/kasrakhaksar/py-auto-migrate/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/kasrakhaksar/py-auto-migrate?style=for-the-badge&color=brightgreen" alt="License">
+
+  <a href="https://github.com/kasrakhaksar/py-auto-migrate/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache--2.0-brightgreen?style=for-the-badge" alt="License">
   </a>
+
   <a href="https://github.com/kasrakhaksar/py-auto-migrate/releases">
-      <img src="https://img.shields.io/github/v/release/kasrakhaksar/py-auto-migrate?style=for-the-badge" alt="Latest Release">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://api.github.com/repos/kasrakhaksar/py-auto-migrate/releases/latest&query=tag_name&label=Release&style=for-the-badge" alt="Latest Release">
   </a>
 </p>
-
 
 ---
 
