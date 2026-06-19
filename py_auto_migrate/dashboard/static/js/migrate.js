@@ -1,18 +1,19 @@
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const sourceSelect = document.getElementById("source");
     const targetSelect = document.getElementById("target");
 
     const DB_CONFIG = {
-        postgresql: ["host","port","db_name","username","password"],
-        mysql: ["host","port","db_name","username","password"],
-        mariadb: ["host","port","db_name","username","password"],
-        mongodb: ["host","port","db_name","username","password"],
-        mssql: ["host","port","db_name","username","password"],
-        redis: ["host","port","db_name","username","password"],
-        clickhouse: ["host","port","db_name","username","password"],
+        postgresql: ["host","port","db_name","table","username","password"],
+        mysql: ["host","port","db_name","table","username","password"],
+        mariadb: ["host","port","db_name","table","username","password"],
+        mongodb: ["host","port","db_name","table","username","password"],
+        mssql: ["host","port","db_name","table","username","password"],
+        redis: ["host","port","db_name","table","username","password"],
+        clickhouse: ["host","port","db_name","table","username","password"],
+        oracle: ["host","port","username","password","service_name","table"],
 
-        oracle: ["host","port","username","password","service_name"],
         dynamodb: ["aws_access_key","aws_secret_key","host","port","region"],
         elasticsearch: ["host","port","username","password"],
         sqlite: ["file_path"]

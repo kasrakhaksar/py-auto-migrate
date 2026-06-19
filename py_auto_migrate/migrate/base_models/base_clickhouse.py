@@ -1,5 +1,5 @@
+import pandas as pd
 from clickhouse_driver import Client
-import json
 from py_auto_migrate.migrate.base_models.base import BaseModel
 
 
@@ -7,7 +7,7 @@ class BaseClickHouse(BaseModel):
     def __init__(self, clickhouse_uri):
         super().__init__(clickhouse_uri)
         self.user, self.password, self.host, self.port, self.db_name = self._parse_clickhouse_uri()
-    
+
     def _parse_clickhouse_uri(self):
         if self.uri.startswith("clickhouse://"):
             uri = self.uri.replace("clickhouse://", "")
@@ -21,9 +21,9 @@ class BaseClickHouse(BaseModel):
             else:
                 user, password = auth_part, ""
         else:
-            user, password = "default", "" 
+            user, password = "default", ""
             host_db_part = uri
-            
+
         if "/" in host_db_part:
             host_port, db_name = host_db_part.split("/", 1)
         else:
@@ -46,7 +46,7 @@ class BaseClickHouse(BaseModel):
                 password=self.password,
                 database=self.db_name
             )
-            client.execute('SELECT 1')
+            client.execute("SELECT 1")
             return client
         except Exception as e:
             print(f"❌ Error connecting to ClickHouse: {e}")
@@ -54,33 +54,45 @@ class BaseClickHouse(BaseModel):
 
     def get_tables(self):
         client = self._connect()
+
         if client is None:
             return []
-            
-        query = "SELECT name FROM system.tables WHERE database = %s"
+
         try:
-            tables_result = client.execute(query, [self.db_name])
-            tables = [r[0] for r in tables_result]
+            query = "SELECT name FROM system.tables WHERE database = %s"
+            result = client.execute(query, [self.db_name])
+
             client.disconnect()
-            return tables
+
+            return [row[0] for row in result]
+
         except Exception as e:
             print(f"❌ Error fetching tables: {e}")
             return []
 
     def read_table(self, table_name):
         client = self._connect()
-        if client is None:
-            return []
 
-        query = f'SELECT * FROM "{table_name}"'
+        if client is None:
+            return pd.DataFrame()
+
         try:
+            query = f'SELECT * FROM `{table_name}`'
+
             data = client.execute(query)
-            columns = [desc[0] for desc in client.description_of_result_set]
-            
+
+            columns = [
+                desc[0]
+                for desc in client.description_of_result_set
+            ]
+
             client.disconnect()
-            
-            result = [dict(zip(columns, row)) for row in data]
-            return json.dumps(result)
+
+            return pd.DataFrame(
+                data,
+                columns=columns
+            )
+
         except Exception as e:
             print(f"❌ Error reading table {table_name}: {e}")
-            return []
+            return pd.DataFrame()

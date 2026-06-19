@@ -1,9 +1,10 @@
-import json
+import pandas as pd
 import psycopg2
 from urllib.parse import urlparse
 from py_auto_migrate.migrate.base_models.base_postgressql import BasePostgresSQL
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
+from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
 
 class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
     def __init__(self, pg_uri):
@@ -13,89 +14,121 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
 
     def _ensure_database(self):
         parsed = urlparse(self.pg_uri)
+
         db_name = parsed.path.lstrip("/")
-        base_uri = self.pg_uri.replace(f"/{db_name}", "/postgres")
+
+        base_uri = self.pg_uri.replace(
+            f"/{db_name}",
+            "/postgres"
+        )
 
         conn = psycopg2.connect(base_uri)
         conn.autocommit = True
+
         cur = conn.cursor()
 
-        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (db_name,))
+        cur.execute(
+            "SELECT 1 FROM pg_database WHERE datname = %s",
+            (db_name,)
+        )
+
         exists = cur.fetchone()
 
         if not exists:
-            cur.execute(f'CREATE DATABASE "{db_name}"')
+            cur.execute(
+                f'CREATE DATABASE "{db_name}"'
+            )
 
         cur.close()
         conn.close()
 
-    def insert(self, data, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
+
         if conn is None:
             return
 
+        if data is None or data.empty:
+            return
+
         try:
-            if isinstance(data, str):
-                data = json.loads(data)
-
-            if not data:
-                return
-
             cur = conn.cursor()
 
-            cur.execute("SELECT to_regclass(%s)", (table_name,))
+            cur.execute(
+                "SELECT to_regclass(%s)",
+                (table_name,)
+            )
+
             table_exists = cur.fetchone()[0] is not None
 
-            columns = list(data[0].keys())
+            columns = list(data.columns)
             column_defs = []
 
             if not table_exists:
-                for col in columns:
-                    sample_value = data[0][col]
+                for col, dtype in data.dtypes.items():
+                    sql_type = sql_type_mapper(
+                        dtype,
+                        "postgresql"
+                    )
 
-                    if isinstance(sample_value, bool):
-                        dtype = "BOOLEAN"
-                    elif isinstance(sample_value, int):
-                        dtype = "INTEGER"
-                    elif isinstance(sample_value, float):
-                        dtype = "FLOAT"
-                    else:
-                        dtype = "TEXT"
-
-                    column_defs.append(f'"{col}" {dtype}')
+                    column_defs.append(
+                        f'"{col}" {sql_type}'
+                    )
 
                 cur.execute(
-                    f'CREATE TABLE "{table_name}" ({", ".join(column_defs)})'
+                    f'''
+                    CREATE TABLE "{table_name}"
+                    (
+                        {", ".join(column_defs)}
+                    )
+                    '''
                 )
+
                 conn.commit()
 
-                values = [
-                    tuple(row[col] for col in columns)
-                    for row in data
-                ]
+                values = list(
+                    data[columns]
+                    .itertuples(
+                        index=False,
+                        name=None
+                    )
+                )
 
             else:
-                cur.execute(f'SELECT * FROM "{table_name}"')
-                existing_rows = set(cur.fetchall())
+                cur.execute(
+                    f'SELECT * FROM "{table_name}"'
+                )
+
+                existing_rows = set(
+                    cur.fetchall()
+                )
 
                 values = []
                 seen = set()
 
-                for row in data:
-                    row_tuple = tuple(row[col] for col in columns)
+                rows = list(
+                    data[columns]
+                    .itertuples(
+                        index=False,
+                        name=None
+                    )
+                )
 
-                    if (
-                        row_tuple not in existing_rows
-                        and row_tuple not in seen
-                    ):
-                        values.append(row_tuple)
-                        seen.add(row_tuple)
+                for row in rows:
+                    if row not in existing_rows and row not in seen:
+                        values.append(row)
+                        seen.add(row)
 
             if values:
-                placeholders = ", ".join(["%s"] * len(columns))
+                placeholders = ", ".join(
+                    ["%s"] * len(columns)
+                )
 
                 cur.executemany(
-                    f'INSERT INTO "{table_name}" VALUES ({placeholders})',
+                    f'''
+                    INSERT INTO "{table_name}"
+                    VALUES ({placeholders})
+                    ''',
                     values
                 )
 
@@ -106,20 +139,21 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
                     ai_ask,
                     table_name,
                     "postgresql",
-                    column_defs if column_defs else columns,
+                    column_defs if column_defs else columns
                 )
 
-                generated_query = ai_query_obj.sql_generate(model=ai_model)
+                generated_query = ai_query_obj.sql_generate(
+                    model=ai_model
+                )
 
-                try:
-                    cur.execute(generated_query)
-                    conn.commit()
+                cur.execute(
+                    generated_query
+                )
 
-                    print(f"AI-generated INSERT query executed successfully: {generated_query}")
+                conn.commit()
 
-                except Exception as e:
-                    print(f"Error executing AI query: {e}")
-                    raise
+        except Exception as e:
+            print(e)
 
         finally:
             conn.close()
