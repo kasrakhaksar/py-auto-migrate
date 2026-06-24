@@ -102,3 +102,33 @@ class BaseMSSQL(BaseModel):
         columns = [ desc[0] for desc in cur.description]
         conn.close()
         return pd.DataFrame(rows, columns=columns)
+    
+    
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        conn = self._connect()
+
+        if conn is None:
+            return []
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT DISTINCT
+                    referenced_table.name AS dependency
+                FROM sys.foreign_keys fk
+                JOIN sys.tables parent_table
+                    ON fk.parent_object_id = parent_table.object_id
+                JOIN sys.tables referenced_table
+                    ON fk.referenced_object_id = referenced_table.object_id
+                WHERE parent_table.name = ?;
+                """,
+                (table_name,)
+            )
+
+            return [row[0] for row in cursor.fetchall()]
+
+        finally:
+            cursor.close()
+            conn.close()

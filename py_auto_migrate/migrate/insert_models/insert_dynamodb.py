@@ -1,4 +1,3 @@
-import pandas as pd
 from botocore.exceptions import ClientError
 from py_auto_migrate.migrate.base_models.base_dynamodb import BaseDynamoDB
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -8,7 +7,7 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
     def __init__(self, dynamo_uri):
         super().__init__(dynamo_uri)
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

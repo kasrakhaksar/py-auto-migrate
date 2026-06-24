@@ -1,4 +1,3 @@
-import pandas as pd
 import psycopg2
 from urllib.parse import urlparse
 from py_auto_migrate.migrate.base_models.base_postgressql import BasePostgresSQL
@@ -42,7 +41,7 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
         cur.close()
         conn.close()
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

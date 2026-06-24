@@ -21,8 +21,8 @@ class BaseClickHouseMigration(BaseMigration, BaseClickHouse):
     def _initialize_source_connection(self):
         BaseClickHouse.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseClickHouse.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseClickHouse.read_table(self, table_name)
     
     def get_tables(self):
         return BaseClickHouse.get_tables(self)

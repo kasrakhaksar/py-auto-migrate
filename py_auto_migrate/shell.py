@@ -134,6 +134,9 @@ This shell allows you to migrate data between different databases interactively.
   ➤ Migrate one table only:
     [command]migrate --source "sqlite:///C:/data/mydb.sqlite" --target "postgresql://user:pass@localhost:5432/db" --table customers[/command]
 
+  ➤ Migrate table forigen key dependency (Source must be a relational database):
+    [command]migrate --source "mssql://<user>:<password>@<host>:<port>/<database>" --target "mariadb://<user>:<password>@<host>:<port>/<database>" --table products --dep[/command]
+
   ➤ AI-powered migration (intelligent filtering):
     [command]migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db" --ai-ask "only users older than 30 and index by name"[/command]
 
@@ -145,7 +148,6 @@ This shell allows you to migrate data between different databases interactively.
   • Natural language query support
   • Intelligent data filtering
   • Smart transformations
-  • Multi-model support (GPT-3.5, GPT-4, etc.)
 
                               
 [bold green]Dashboard:[/bold green]
@@ -175,7 +177,7 @@ This shell allows you to migrate data between different databases interactively.
 
 
 [bold green]Notes:[/bold green]
-  • Table/collection names are case-sensitive.
+  • Table names are case-sensitive.
   • Existing tables in target databases will NOT be replaced.
   • AI features require OpenAI API key to be set in environment variable OPENAI_API_KEY
   • For AI-powered migrations, the source database must support data reading operations

@@ -21,8 +21,8 @@ class BaseMongoMigration(BaseMigration, BaseMongoDB):
     def _initialize_source_connection(self):
         BaseMongoDB.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseMongoDB.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseMongoDB.read_table(self, table_name)
     
     def get_tables(self):
         return BaseMongoDB.get_tables(self)

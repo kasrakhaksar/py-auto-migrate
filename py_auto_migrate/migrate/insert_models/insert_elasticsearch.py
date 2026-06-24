@@ -1,4 +1,3 @@
-import pandas as pd
 from elasticsearch import helpers
 from py_auto_migrate.migrate.base_models.base_elasticsearch import BaseElasticsearch
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -15,7 +14,7 @@ class InsertElasticsearch(BaseElasticsearch, BaseInsert):
                 ignore=400
             )
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         es = self._connect()
 
         if es is None:

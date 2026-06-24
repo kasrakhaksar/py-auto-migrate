@@ -58,3 +58,35 @@ class BasePostgresSQL(BaseModel):
             return df
         finally:
             conn.close()
+
+
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        conn = self._connect()
+
+        if conn is None:
+            return []
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT DISTINCT
+                    parent.relname AS dependency
+                FROM pg_constraint con
+                JOIN pg_class child
+                    ON child.oid = con.conrelid
+                JOIN pg_class parent
+                    ON parent.oid = con.confrelid
+                WHERE con.contype = 'f'
+                AND child.relname = %s;
+                """,
+                (table_name,)
+            )
+
+            
+            return [row[0] for row in cursor.fetchall()]
+
+        finally:
+            cursor.close()
+            conn.close()

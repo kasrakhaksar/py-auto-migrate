@@ -1,4 +1,3 @@
-import pandas as pd
 import pymysql
 from py_auto_migrate.migrate.base_models.base_mariadb import BaseMariaDB
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -30,7 +29,7 @@ class InsertMariaDB(BaseMariaDB, BaseInsert):
         conn.commit()
         conn.close()
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

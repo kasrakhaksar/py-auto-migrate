@@ -22,24 +22,45 @@ class BaseMigration(ABC):
     @abstractmethod
     def get_tables(self) -> list:
         pass
+
     
-    def migrate_one(self, table_name: str, ai_ask=None, ai_model=None) -> None:
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        return []
+        
+
+    def migrate_one(self, table_name: str, ai_ask=None, ai_model=None , dep=False) -> None:
 
         data = self.read_table(table_name)
 
         if data is not None and not data.empty:
-            print(f"  📊 Migrating {table_name}")
+            print(f"→ Migrating table: {table_name}")
             self.inserter.insert(data, table_name, ai_ask, ai_model)
-            print(f"  ✅ Completed: {table_name}")
+            print(f"✅ Completed {table_name}")
         else:
-            print(f"  ⚠️ No data in {table_name}")
+            print(f"⚠️ No data in {table_name}")
 
 
-    def migrate_all(self) -> None:
+
+        if dep == True :
+            foreignkey_dependencies_tables = self.get_foreignkey_dependencies(table_name)
+            
+            for rel_table in foreignkey_dependencies_tables:
+                print(f"→ Migrating dependent table: {rel_table}")
+
+                rel_data = self.read_table(rel_table)
+
+                if rel_data is not None and not rel_data.empty:
+                    self.inserter.insert(rel_data, rel_table)
+
+                print(f"✅ Completed {rel_table}")
+
+
+
+
+    def migrate_all(self , ai_ask=None, ai_model=None , dep=False) -> None:
 
         tables = self.get_tables()
-        print(f"📋 Found {len(tables)} tables to migrate")
 
-        for i, table in enumerate(tables, 1):
-            print(f"\n➡ [{i}/{len(tables)}] Migrating: {table}")
-            self.migrate_one(table)
+        for i, table_name in enumerate(tables, 1):
+            print(f"\n➡ [{i}/{len(tables)}] Migrating: {table_name}")
+            self.migrate_one(table_name , ai_ask , ai_model , dep)

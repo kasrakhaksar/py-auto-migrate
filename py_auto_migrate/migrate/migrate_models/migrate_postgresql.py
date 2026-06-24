@@ -22,11 +22,14 @@ class BasePostgresMigration(BaseMigration, BasePostgresSQL):
     def _initialize_source_connection(self):
         BasePostgresSQL.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BasePostgresSQL.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BasePostgresSQL.read_table(self, table_name)
     
     def get_tables(self):
         return BasePostgresSQL.get_tables(self)
+    
+    def get_foreignkey_dependencies(self, table_name):
+        return BasePostgresSQL.get_foreignkey_dependencies(self , table_name)
 
 
 

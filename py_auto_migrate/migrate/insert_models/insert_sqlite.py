@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 import sqlite3
 from py_auto_migrate.migrate.base_models.base_sqlite import BaseSQLite
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -32,7 +31,7 @@ class InsertSQLite(BaseSQLite, BaseInsert):
             self.sqlite_path
         )
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

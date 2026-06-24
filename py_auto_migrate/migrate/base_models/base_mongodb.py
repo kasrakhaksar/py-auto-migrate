@@ -58,20 +58,20 @@ class BaseMongoDB(BaseModel):
 
 
         try:
-            return db.list_collection_names()
+            return db.list_table_names()
         except Exception as e:
             print(f"❌ Error getting collections: {e}")
             return []
-    def read_table(self, collection_name):
+    def read_table(self, table_name):
 
         db = self._connect()
         if db is None:
             return pd.DataFrame()
         try:
-            data = list(db[collection_name].find())
+            data = list(db[table_name].find())
 
             if not data:
-                print(f"❌ Collection '{collection_name}' is empty.")
+                print(f"❌ Collection '{table_name}' is empty.")
                 return pd.DataFrame()
 
             for doc in data:
@@ -79,5 +79,5 @@ class BaseMongoDB(BaseModel):
                     doc["_id"] = str(doc["_id"])
             return pd.DataFrame(data)
         except Exception as e:
-            print(f"❌ Error reading collection '{collection_name}': {e}")
+            print(f"❌ Error reading collection '{table_name}': {e}")
             return pd.DataFrame()

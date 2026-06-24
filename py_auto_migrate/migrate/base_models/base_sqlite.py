@@ -31,3 +31,23 @@ class BaseSQLite(BaseModel):
         conn.close()
 
         return df
+    
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        conn = self._connect()
+
+        if conn is None:
+            return []
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(f"PRAGMA foreign_key_list('{table_name}')")
+
+            return list({
+                row[2]
+                for row in cursor.fetchall()
+            })
+
+        finally:
+            cursor.close()
+            conn.close()

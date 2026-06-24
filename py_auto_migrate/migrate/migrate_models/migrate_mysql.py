@@ -21,11 +21,14 @@ class BaseMySQLMigration(BaseMigration, BaseMySQL):
     def _initialize_source_connection(self):
         BaseMySQL.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseMySQL.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseMySQL.read_table(self, table_name)
     
     def get_tables(self):
         return BaseMySQL.get_tables(self)
+    
+    def get_foreignkey_dependencies(self, table_name):
+        return BaseMySQL.get_foreignkey_dependencies(self , table_name)
 
 
 class MySQLToPostgres(BaseMySQLMigration):

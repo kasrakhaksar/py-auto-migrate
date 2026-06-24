@@ -19,12 +19,14 @@ class BaseSQLiteMigration(BaseMigration, BaseSQLite):
     def _initialize_source_connection(self):
         BaseSQLite.__init__(self, self.source_uri)
 
-    def read_table(self, collection_name: str):
-        return BaseSQLite.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseSQLite.read_table(self, table_name)
 
     def get_tables(self):
         return BaseSQLite.get_tables(self)
 
+    def get_foreignkey_dependencies(self, table_name):
+        return BaseSQLite.get_foreignkey_dependencies(self , table_name)
 
 class SQLiteToMySQL(BaseSQLiteMigration):
     def __init__(self, source_uri, target_uri):

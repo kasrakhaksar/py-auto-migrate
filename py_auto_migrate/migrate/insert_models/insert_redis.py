@@ -1,4 +1,3 @@
-import pandas as pd
 import json
 from py_auto_migrate.migrate.base_models.base_redis import BaseRedis
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -9,7 +8,7 @@ class InsertRedis(BaseRedis, BaseInsert):
         super().__init__(redis_uri)
         self.db_index = db_index
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

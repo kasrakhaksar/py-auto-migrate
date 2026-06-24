@@ -1,4 +1,3 @@
-import pandas as pd
 from py_auto_migrate.migrate.base_models.base_mongodb import BaseMongoDB
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
@@ -8,7 +7,7 @@ class InsertMongoDB(BaseMongoDB, BaseInsert):
     def __init__(self, mongo_uri):
         super().__init__(mongo_uri)
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
 
         db = self._connect()
         if db is None or data.empty:

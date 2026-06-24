@@ -88,3 +88,30 @@ class BaseMariaDB(BaseModel):
             rows,
             columns=columns
         )
+    
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        conn = self._connect()
+
+        if conn is None:
+            return []
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT DISTINCT
+                    REFERENCED_TABLE_NAME AS dependency
+                FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = %s
+                AND REFERENCED_TABLE_NAME IS NOT NULL;
+                """,
+                (table_name,)
+            )
+
+            return [row[0] for row in cursor.fetchall()]
+
+        finally:
+            cursor.close()
+            conn.close()

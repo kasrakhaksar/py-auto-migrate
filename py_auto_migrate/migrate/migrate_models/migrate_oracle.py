@@ -20,11 +20,14 @@ class BaseOracleMigration(BaseMigration, BaseOracle):
     def _initialize_source_connection(self):
         BaseOracle.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseOracle.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseOracle.read_table(self, table_name)
     
     def get_tables(self):
         return BaseOracle.get_tables(self)
+
+    def get_foreignkey_dependencies(self, table_name):
+        return BaseOracle.get_foreignkey_dependencies(self , table_name)
 
 
 class OracleToMySQL(BaseOracleMigration):

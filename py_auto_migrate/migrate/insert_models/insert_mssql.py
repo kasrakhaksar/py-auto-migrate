@@ -1,4 +1,3 @@
-import pandas as pd
 import pyodbc
 from py_auto_migrate.migrate.base_models.base_mssql import BaseMSSQL
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
@@ -40,7 +39,7 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
         finally:
             conn.close()
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._connect()
 
         if conn is None:

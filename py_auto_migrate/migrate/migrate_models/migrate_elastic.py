@@ -20,8 +20,8 @@ class BaseElasticMigration(BaseMigration, BaseElasticsearch):
     def _initialize_source_connection(self):
         BaseElasticsearch.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseElasticsearch.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseElasticsearch.read_table(self, table_name)
     
     def get_tables(self):
         return BaseElasticsearch.get_tables(self)

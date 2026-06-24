@@ -56,7 +56,32 @@ class BaseOracle(BaseModel):
         columns = [desc[0] for desc in cursor.description]
         cursor.close()
         conn.close()
-        return pd.DataFrame(
-            rows,
-            columns=columns
-        )
+        return pd.DataFrame(rows, columns=columns)
+    
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        conn = self._connect()
+
+        if conn is None:
+            return []
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT DISTINCT
+                    pk.table_name AS dependency
+                FROM user_constraints fk
+                JOIN user_constraints pk
+                    ON fk.r_constraint_name = pk.constraint_name
+                WHERE fk.constraint_type = 'R'
+                AND fk.table_name = :table_name
+                """,
+                {"table_name": table_name.upper()}
+            )
+
+            return [row[0] for row in cursor.fetchall()]
+
+        finally:
+            cursor.close()
+            conn.close()

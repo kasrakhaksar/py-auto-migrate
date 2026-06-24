@@ -20,11 +20,14 @@ class BaseMSSQLMigration(BaseMigration, BaseMSSQL):
     def _initialize_source_connection(self):
         BaseMSSQL.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseMSSQL.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseMSSQL.read_table(self, table_name)
     
     def get_tables(self):
         return BaseMSSQL.get_tables(self)
+
+    def get_foreignkey_dependencies(self, table_name):
+        return BaseMSSQL.get_foreignkey_dependencies(self , table_name)
 
 
 class MSSQLToMySQL(BaseMSSQLMigration):

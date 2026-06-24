@@ -20,8 +20,8 @@ class BaseDynamoMigration(BaseMigration, BaseDynamoDB):
     def _initialize_source_connection(self):
         BaseDynamoDB.__init__(self, self.source_uri)
     
-    def read_table(self, collection_name: str):
-        return BaseDynamoDB.read_table(self, collection_name)
+    def read_table(self, table_name: str):
+        return BaseDynamoDB.read_table(self, table_name)
     
     def get_tables(self):
         return BaseDynamoDB.get_tables(self)

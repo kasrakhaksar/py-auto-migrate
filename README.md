@@ -74,6 +74,7 @@ py-auto-migrate migrate --source <SOURCE_URI> --target <TARGET_URI>
 | `--table`      | **Optional.** Migrate a specific table. If omitted, **all** data is migrated.                |
 | `--ai-ask`     | **Optional.** Natural language query for **AI-powered**.                                     |
 | `--ai-model`   | **Optional.** OpenAI model (default: gpt-3.5-turbo).                                         |
+| `--dep`        | **Optional.** Table forigen key dependency.                                                  |
 
 ### Examples
 
@@ -90,7 +91,8 @@ py-auto-migrate migrate \
 ```bash
 py-auto-migrate migrate \
   --source "postgresql://user:pass@localhost:5432/mydb" \
-  --target "mongodb://user:pass@localhost:27017/mydb" \ --table users
+  --target "mongodb://user:pass@localhost:27017/mydb" \
+  --table users
 ```
 
 > **The Magic:** If the target database or table doesn't exist, **Py-Auto-Migrate automatically creates it for you!** It intelligently maps source data types to the appropriate target schema.
@@ -112,6 +114,19 @@ py-auto-migrate migrate \
   --ai-ask "Please select and insert only names that start with 'S', then sort them." /
   --ai-model "gpt-3.5-turbo"
 ```
+
+
+**4. Migrate table forigen key dependency (Source must be a relational database):**
+
+```bash
+py-auto-migrate migrate \
+  --source "postgresql://user:pass@localhost:5432/mydb" \
+  --target "mongodb://user:pass@localhost:27017/mydb" \
+  --table orders \
+  --dep
+```
+
+> --dep automatically adds all tables referenced by foreign key relationships from the source table to the insertion list.
 
 ---
 

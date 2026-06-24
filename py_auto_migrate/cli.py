@@ -3,12 +3,13 @@ import threading
 import webbrowser
 import uvicorn
 import time
-
+import warnings
+warnings.filterwarnings('ignore')
 
 try:
-    from py_auto_migrate.migrate.mapping import MIGRATION_MAP, ALL_DATABASES_LIST , AI_SUPPORTED_DATABASES
+    from py_auto_migrate.migrate.mapping import MIGRATION_MAP, ALL_DATABASES_LIST , AI_SUPPORTED_DATABASES , DEP_SUPPORTED_DATABASES
 except ImportError:
-    from .migrate.mapping import MIGRATION_MAP, ALL_DATABASES_LIST , AI_SUPPORTED_DATABASES
+    from .migrate.mapping import MIGRATION_MAP, ALL_DATABASES_LIST , AI_SUPPORTED_DATABASES , DEP_SUPPORTED_DATABASES
 
 
 
@@ -22,7 +23,7 @@ def get_uri(uri):
 
 @click.group(help="""
 
-🚀 Py-Auto-Migrate
+Py-Auto-Migrate
 
 Easily migrate data between different database systems.
 
@@ -97,9 +98,14 @@ Usage:
 
 ⚡ Migrate a single table:
     py-auto-migrate migrate --source "mariadb://user:pass@localhost:3306/db" --target "mongodb://username:password@<host>:<port>/<database>" --table "users"
+             
+⚡ Migrate table forigen key dependency (Source must be a relational database):
+    py-auto-migrate migrate --source "mssql://<user>:<password>@<host>:<port>/<database>" --target "mariadb://<user>:<password>@<host>:<port>/<database>" --table "orders" --dep
 
 🤖 Migrate with AI query (Target must be a relational database):
     py-auto-migrate migrate --source "postgresql://user:pass@localhost:5432/db" --target "mysql://user:pass@localhost:3306/db" --ai-ask "only users older than 30" --ai-model "gpt-3.5-turbo"
+
+             
 
              
 
@@ -121,17 +127,11 @@ or:
 
 ✨ Dashboard Features:
     Easily configure source and target connections
-
     Select specific tables for migration
-
     View logs and errors in real-time
-
     Run migrations with a single click
-
     AI query support in a graphical interface
-
     Monitor migration progress
-
     Manage multiple migration jobs
 
 """)
@@ -143,7 +143,7 @@ def main():
 
 @main.command(help="""
 
-📤 Perform migration between databases.
+Perform migration between databases.
 
 Parameters:
 --source      Source DB URI 
@@ -151,6 +151,7 @@ Parameters:
 --table       (Optional) Migrate only one table
 --ai-ask      (Optional) Natural language query
 --ai-model    (Optional) OpenAI model (default: gpt-3.5-turbo)
+--dep         (Optional) Enable forigen key dependency mode
 
 """)
 
@@ -160,8 +161,11 @@ Parameters:
 @click.option('--table', required=False, help="(optional) Table name")
 @click.option('--ai-ask', required=False, help="(optional) Natural language query for AI (e.g., 'i want to insert users with age > 25')")
 @click.option('--ai-model', required=False, help="(optional) OpenAI model (default: gpt-3.5-turbo)")
+@click.option('--dep', is_flag=True, help='(optional) Enable forigen key dependency mode')
 
-def migrate(source, target, table, ai_ask, ai_model):
+
+def migrate(source, target, table, ai_ask, ai_model , dep):
+
 
     source_type = get_uri(source)
     target_type = get_uri(target)
@@ -170,17 +174,26 @@ def migrate(source, target, table, ai_ask, ai_model):
         click.echo("❌ Invalid source or target URI format.")
         return
 
+
     if ai_ask and target_type not in AI_SUPPORTED_DATABASES:
         click.echo(f"❌ Sorry, AI queries are not supported for {target_type.upper()} database.")
-        click.echo(f"✅ AI supported databases: {', '.join(AI_SUPPORTED_DATABASES)}")
+        click.echo(f"✅ Supported databases: {', '.join(AI_SUPPORTED_DATABASES)}")
+        return
+    
+
+    if dep and source_type not in DEP_SUPPORTED_DATABASES:
+        click.echo(f"❌ Sorry, dependency mode are not supported for {target_type.upper()} database.")
+        click.echo(f"✅ Supported databases: {', '.join(AI_SUPPORTED_DATABASES)}")
         return
 
     migration_class = MIGRATION_MAP.get((source_type, target_type))
+
 
     if not migration_class:
         click.echo(
             f"❌ Migration from {source_type} to {target_type} not supported yet.")
         return
+
 
     try:
         migration = migration_class(source, target)
@@ -188,25 +201,12 @@ def migrate(source, target, table, ai_ask, ai_model):
         if ai_ask and not ai_model:
             ai_model = 'gpt-3.5-turbo'
 
-        if ai_ask and table:
-            click.echo(f"🤖 Using AI query: {ai_ask}")
-            migration.migrate_one(table, ai_ask, ai_model)
-        
-        elif ai_ask and not table:
-            click.echo(f"🤖 Using AI query: {ai_ask}")
-            tables = migration.get_tables()
-            for tbl in tables:
-                click.echo(f"  → Migrating table: {tbl}")
-                migration.migrate_one(tbl, ai_ask, ai_model)
-        
-        elif not ai_ask and table:
-            click.echo(f"  → Migrating table: {table}")
-            migration.migrate_one(table)
-        
+        if table:
+            migration.migrate_one(table, ai_ask, ai_model ,dep)
         else:
-            migration.migrate_all()
+            migration.migrate_all(ai_ask, ai_model ,dep)
 
-        click.echo("✅ Migration completed successfully!")
+        click.echo("All Migration completed successfully!")
 
     except Exception as e:
         click.echo(f"❌ Migration failed: {str(e)}")

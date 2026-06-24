@@ -1,4 +1,3 @@
-import pandas as pd
 from py_auto_migrate.migrate.base_models.base_oracle import BaseOracle
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
@@ -21,7 +20,7 @@ class InsertOracle(BaseOracle, BaseInsert):
         except Exception:
             return None
 
-    def insert(self, data: pd.DataFrame, table_name, ai_ask=None, ai_model=None):
+    def insert(self, data, table_name, ai_ask=None, ai_model=None):
         conn = self._conn()
 
         if conn is None:

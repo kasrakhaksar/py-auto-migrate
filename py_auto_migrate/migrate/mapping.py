@@ -12,7 +12,8 @@ from py_auto_migrate.migrate.migrate_models.migrate_clickhouse import *
 
 
 ALL_DATABASES_LIST = ["mongodb://", "mysql://", "mariadb://", "postgresql://","mssql://", "oracle://", "elasticsearch://","redis://", "dynamodb://", "sqlite://", "clickhouse://"]
-AI_SUPPORTED_DATABASES = ['postgresql://', 'mysql://', 'mariadb://', 'sqlite://', 'oracle://' , 'mssql://']
+AI_SUPPORTED_DATABASES = ['postgresql://', 'mysql://', 'mariadb://', 'sqlite://', 'oracle://' , 'mssql://' , "clickhouse://"]
+DEP_SUPPORTED_DATABASES = ['postgresql://', 'mysql://', 'mariadb://', 'sqlite://', 'oracle://' , 'mssql://']
 
 
 MIGRATION_MAP = {
