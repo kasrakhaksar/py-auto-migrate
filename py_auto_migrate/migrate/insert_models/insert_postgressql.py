@@ -47,9 +47,6 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
         if conn is None:
             return
 
-        if data is None or data.empty:
-            return
-
         try:
             cur = conn.cursor()
 
@@ -62,7 +59,7 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
 
             columns = list(data.columns)
             column_defs = []
-
+            
             if not table_exists:
                 for col, dtype in data.dtypes.items():
                     sql_type = sql_type_mapper(
@@ -153,6 +150,9 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
 
         except Exception as e:
             print(e)
+            return False
 
         finally:
             conn.close()
+
+        return True

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+from py_auto_migrate.migrate.utils.type_mapper import normalize_datetime
 
 
 class BaseMigration(ABC):
@@ -26,35 +27,45 @@ class BaseMigration(ABC):
     
     def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
         return []
+    
         
 
     def migrate_one(self, table_name: str, ai_ask=None, ai_model=None , dep=False) -> None:
 
-        data = self.read_table(table_name)
+        df = self.read_table(table_name)
+        df = normalize_datetime(df)
 
-        if data is not None and not data.empty:
+        if df is not None and not df.empty:
             print(f"→ Migrating table: {table_name}")
-            self.inserter.insert(data, table_name, ai_ask, ai_model)
-            print(f"✅ Completed {table_name}")
+            migrate_state = self.inserter.insert(df, table_name, ai_ask, ai_model)
+            if migrate_state == True:
+                print(f"✅ Completed {table_name}")
+            else :
+                print(f"❌ Error {table_name}")
         else:
             print(f"⚠️ No data in {table_name}")
 
 
 
         if dep == True :
+
             foreignkey_dependencies_tables = self.get_foreignkey_dependencies(table_name)
             
             for rel_table in foreignkey_dependencies_tables:
-                print(f"→ Migrating dependent table: {rel_table}")
 
-                rel_data = self.read_table(rel_table)
+                rel_df = self.read_table(rel_table)
+                rel_df = normalize_datetime(rel_df)
 
-                if rel_data is not None and not rel_data.empty:
-                    self.inserter.insert(rel_data, rel_table)
-
-                print(f"✅ Completed {rel_table}")
-
-
+                
+                if rel_df is not None and not rel_df.empty:
+                    print(f"→ Migrating dependent table: {rel_table}")
+                    migrate_state = self.inserter.insert(rel_df, rel_table)
+                    if migrate_state == True:
+                        print(f"✅ Completed {rel_table}")
+                    else:
+                        print(f"❌ Error {table_name}")
+                else:
+                    print(f"⚠️ No data in {table_name}")
 
 
     def migrate_all(self , ai_ask=None, ai_model=None , dep=False) -> None:

@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='py_auto_migrate',
-    version='0.7.2',
+    version='0.7.7',
     author='Kasra Khaksar',
     author_email='kasrakhaksar17@gmail.com',
     description='A Powerful Database Migration Tool To Transfer Data.',
@@ -28,6 +28,7 @@ setup(
         'boto3',
         'elasticsearch',
         'clickhouse_driver',
+        'clickhouse_connect'
         'uvicorn',
         'fastapi',
         'python-multipart',

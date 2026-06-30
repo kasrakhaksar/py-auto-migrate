@@ -4,51 +4,69 @@ from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
 
+
 class InsertMSSQL(BaseMSSQL, BaseInsert):
+
     def __init__(self, mssql_uri):
-        self.mssql_uri = mssql_uri
-        self._ensure_database()
         super().__init__(mssql_uri)
+        self._ensure_database()
 
     def _ensure_database(self):
-        conn = self._connect()
+
+        cfg = self._parse_mssql_uri()
+        db_name = cfg["database"]
+
+        if cfg["auth"] == "windows":
+
+            conn_str = (
+                "DRIVER={ODBC Driver 18 for SQL Server};"
+                f"SERVER={cfg['host']},{cfg['port']};"
+                "DATABASE=master;"
+                "Trusted_Connection=yes;"
+                "Encrypt=no;"
+                "TrustServerCertificate=yes;"
+            )
+
+        else:
+
+            conn_str = (
+                "DRIVER={ODBC Driver 18 for SQL Server};"
+                f"SERVER={cfg['host']},{cfg['port']};"
+                "DATABASE=master;"
+                f"UID={cfg['user']};"
+                f"PWD={cfg['password']};"
+                "Encrypt=no;"
+                "TrustServerCertificate=yes;"
+            )
+
+        conn = pyodbc.connect(conn_str, autocommit=True)
 
         try:
+
             cur = conn.cursor()
 
-            db_name = conn.getinfo(
-                pyodbc.SQL_DATABASE_NAME
-            )
-
             cur.execute(
-                f"""
-                IF NOT EXISTS
-                (
-                    SELECT name
-                    FROM sys.databases
-                    WHERE name = '{db_name}'
-                )
-                BEGIN
-                    CREATE DATABASE [{db_name}]
-                END
-                """
+                "SELECT DB_ID(?)",
+                (db_name,)
             )
 
-            conn.commit()
+            exists = cur.fetchone()[0]
+
+            if exists is None:
+                cur.execute(f"CREATE DATABASE [{db_name}]")
 
         finally:
             conn.close()
 
     def insert(self, data, table_name, ai_ask=None, ai_model=None):
+
         conn = self._connect()
 
         if conn is None:
             return
 
-        if data is None or data.empty:
-            return
-
         try:
+
             cur = conn.cursor()
 
             cur.execute(
@@ -65,14 +83,16 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
             column_defs = []
 
             if not table_exists:
+
                 for col, dtype in data.dtypes.items():
+
                     sql_type = sql_type_mapper(
                         dtype,
                         "mssql"
                     )
 
                     column_defs.append(
-                        f'"{col}" {sql_type}'
+                        f"[{col}] {sql_type}"
                     )
 
                 cur.execute(
@@ -88,6 +108,7 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
                 existing_rows = set()
 
             else:
+
                 cur.execute(
                     f"SELECT * FROM [{table_name}]"
                 )
@@ -100,19 +121,20 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
             seen = set()
 
             rows = list(
-                data[columns]
-                .itertuples(
+                data[columns].itertuples(
                     index=False,
                     name=None
                 )
             )
 
             for row in rows:
+
                 if row not in existing_rows and row not in seen:
                     values.append(row)
                     seen.add(row)
 
             if values:
+
                 placeholders = ", ".join(
                     ["?"] * len(columns)
                 )
@@ -130,6 +152,7 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
                 conn.commit()
 
             if ai_ask and ai_model:
+
                 ai_query_obj = AIQuery(
                     ai_ask,
                     table_name,
@@ -141,14 +164,15 @@ class InsertMSSQL(BaseMSSQL, BaseInsert):
                     model=ai_model
                 )
 
-                cur.execute(
-                    generated_query
-                )
+                cur.execute(generated_query)
 
                 conn.commit()
 
         except Exception as e:
             print(e)
+            return False
 
         finally:
             conn.close()
+
+        return True

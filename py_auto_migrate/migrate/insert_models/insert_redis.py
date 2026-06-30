@@ -12,44 +12,34 @@ class InsertRedis(BaseRedis, BaseInsert):
         conn = self._connect()
 
         if conn is None:
-            return
-
-        if data is None or data.empty:
-            return
+            return False
 
         try:
-            existing = conn.get(
-                table_name
-            )
+            existing = conn.get(table_name)
 
             existing_data = []
 
             if existing:
                 if isinstance(existing, bytes):
-                    existing = existing.decode(
-                        "utf-8"
-                    )
+                    existing = existing.decode("utf-8")
 
                 try:
-                    existing_data = json.loads(
-                        existing
-                    )
+                    existing_data = json.loads(existing)
 
                     if not isinstance(existing_data, list):
-                        existing_data = [
-                            existing_data
-                        ]
+                        existing_data = [existing_data]
 
                 except Exception:
                     existing_data = []
 
-            existing_set = set(
+            existing_set = {
                 json.dumps(
                     item,
-                    sort_keys=True
+                    sort_keys=True,
+                    default=str
                 )
                 for item in existing_data
-            )
+            }
 
             new_data = []
 
@@ -60,20 +50,16 @@ class InsertRedis(BaseRedis, BaseInsert):
             for item in rows:
                 item_str = json.dumps(
                     item,
-                    sort_keys=True
+                    sort_keys=True,
+                    default=str
                 )
 
                 if item_str not in existing_set:
                     new_data.append(item)
-
-                    existing_set.add(
-                        item_str
-                    )
+                    existing_set.add(item_str)
 
             if new_data:
-                existing_data.extend(
-                    new_data
-                )
+                existing_data.extend(new_data)
 
                 conn.set(
                     table_name,
@@ -106,9 +92,13 @@ class InsertRedis(BaseRedis, BaseInsert):
                     model=ai_model
                 )
 
-                print(
-                    generated_query
-                )
+                print(generated_query)
+
+        except Exception as e:
+            print(e)
+            return False
 
         finally:
             conn.close()
+
+        return True

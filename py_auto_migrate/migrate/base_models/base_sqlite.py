@@ -9,8 +9,9 @@ class BaseSQLite(BaseModel):
         super().__init__(sqlite_path)
 
     def _connect(self):
+
         return sqlite3.connect(
-            self.uri
+            self.uri.replace("sqlite:///" ,'').replace("sqlite://" ,'')
         )
 
     def get_tables(self):

@@ -76,7 +76,7 @@ oracle://<user>:<password>@<host>:<port>/<service_name>
 
 
 DynamoDB:
-dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<database>?region=<region>
+dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/?region=<region>
             
 
 Elastic Search:
@@ -182,12 +182,12 @@ def migrate(source, target, table, ai_ask, ai_model , dep):
     
 
     if dep and source_type not in DEP_SUPPORTED_DATABASES:
-        click.echo(f"❌ Sorry, dependency mode are not supported for {target_type.upper()} database.")
-        click.echo(f"✅ Supported databases: {', '.join(AI_SUPPORTED_DATABASES)}")
+        click.echo(f"❌ Sorry, dependency mode are not supported for {source_type.upper()} database.")
+        click.echo(f"✅ Supported databases: {', '.join(DEP_SUPPORTED_DATABASES)}")
         return
 
-    migration_class = MIGRATION_MAP.get((source_type, target_type))
 
+    migration_class = MIGRATION_MAP.get((source_type, target_type))
 
     if not migration_class:
         click.echo(
@@ -206,10 +206,7 @@ def migrate(source, target, table, ai_ask, ai_model , dep):
         else:
             migration.migrate_all(ai_ask, ai_model ,dep)
 
-        click.echo("All Migration completed successfully!")
-
-    except Exception as e:
-        click.echo(f"❌ Migration failed: {str(e)}")
+    except :
         raise
     
 

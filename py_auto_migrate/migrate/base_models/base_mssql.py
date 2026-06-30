@@ -8,7 +8,6 @@ class BaseMSSQL(BaseModel):
     def __init__(self, mssql_uri):
         super().__init__(mssql_uri)
 
-
     def _parse_mssql_uri(self, uri=None):
 
         if uri is None:
@@ -17,10 +16,12 @@ class BaseMSSQL(BaseModel):
         uri = uri.replace("mssql://", "")
 
         if uri.startswith("@") or "@" not in uri:
+
             if uri.startswith("@"):
                 uri = uri[1:]
 
             host_port, db_name = uri.split("/", 1)
+
             if ":" in host_port:
                 host, port = host_port.split(":")
             else:
@@ -37,7 +38,6 @@ class BaseMSSQL(BaseModel):
         user, password = user_pass.split(":", 1)
         host_port, db_name = host_db.split("/", 1)
 
-
         if ":" in host_port:
             host, port = host_port.split(":")
         else:
@@ -52,25 +52,31 @@ class BaseMSSQL(BaseModel):
             "password": password
         }
 
-
     def _connect(self):
 
         cfg = self._parse_mssql_uri()
+
         if cfg["auth"] == "windows":
 
             conn_str = (
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                "DRIVER={ODBC Driver 18 for SQL Server};"
                 f"SERVER={cfg['host']},{cfg['port']};"
                 f"DATABASE={cfg['database']};"
                 "Trusted_Connection=yes;"
+                "Encrypt=no;"
+                "TrustServerCertificate=yes;"
             )
+
         else:
+
             conn_str = (
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                "DRIVER={ODBC Driver 18 for SQL Server};"
                 f"SERVER={cfg['host']},{cfg['port']};"
                 f"DATABASE={cfg['database']};"
                 f"UID={cfg['user']};"
                 f"PWD={cfg['password']};"
+                "Encrypt=no;"
+                "TrustServerCertificate=yes;"
             )
 
         return pyodbc.connect(conn_str)
@@ -79,36 +85,40 @@ class BaseMSSQL(BaseModel):
 
         conn = self._connect()
 
-        cur = conn.cursor()
+        try:
+            cur = conn.cursor()
 
-        cur.execute(
-            """
-            SELECT TABLE_NAME
-            FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_TYPE='BASE TABLE'
-            """
-        )
+            cur.execute("""
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE='BASE TABLE'
+            """)
 
-        tables = [ row[0] for row in cur.fetchall()]
-        conn.close()
-        return tables
+            return [row[0] for row in cur.fetchall()]
+
+        finally:
+            conn.close()
 
     def read_table(self, table_name):
-        conn = self._connect()
-        cur = conn.cursor()
-        cur.execute( f"SELECT * FROM [{table_name}]")
-        rows = cur.fetchall()
 
-        columns = [ desc[0] for desc in cur.description]
-        conn.close()
-        return pd.DataFrame(rows, columns=columns)
-    
-    
+        conn = self._connect()
+
+        try:
+            cur = conn.cursor()
+
+            cur.execute(f"SELECT * FROM [{table_name}]")
+
+            rows = [tuple(r) for r in cur.fetchall()]
+            columns = [d[0] for d in cur.description]
+
+            return pd.DataFrame.from_records(rows, columns=columns)
+
+        finally:
+            conn.close()
+
     def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
-        conn = self._connect()
 
-        if conn is None:
-            return []
+        conn = self._connect()
 
         try:
             cursor = conn.cursor()
@@ -130,5 +140,4 @@ class BaseMSSQL(BaseModel):
             return [row[0] for row in cursor.fetchall()]
 
         finally:
-            cursor.close()
             conn.close()

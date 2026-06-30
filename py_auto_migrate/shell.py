@@ -114,7 +114,7 @@ This shell allows you to migrate data between different databases interactively.
     oracle://<user>:<password>@<host>:<port>/<service_name>
                               
   DynamoDB:
-    dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/<database>?region=<region>
+    dynamodb://<aws_access_key>:<aws_secret_key>@<host>:<port>/?region=<region>
                               
 
   Elastic Search:

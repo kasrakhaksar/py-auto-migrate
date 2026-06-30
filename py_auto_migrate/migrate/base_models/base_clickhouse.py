@@ -1,6 +1,10 @@
 import pandas as pd
 from clickhouse_driver import Client
 from py_auto_migrate.migrate.base_models.base import BaseModel
+from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from clickhouse_driver import Client
+import clickhouse_connect
+
 
 
 class BaseClickHouse(BaseModel):
@@ -37,11 +41,39 @@ class BaseClickHouse(BaseModel):
 
         return user, password, host, port, db_name
 
+
     def _connect(self):
+        if self.port != 8123:
+            try:
+                client = Client(
+                    host=self.host,
+                    port=self.port,
+                    user=self.user,
+                    password=self.password,
+                    database=self.db_name
+                )
+                client.execute("SELECT 1")
+                return client
+            except Exception:
+                pass
+
+        try:
+            client = clickhouse_connect.get_client(
+                host=self.host,
+                port=self.port,
+                username=self.user,
+                password=self.password,
+                database=self.db_name
+            )
+            client.query("SELECT 1")
+            return client
+        except Exception:
+            pass
+
         try:
             client = Client(
                 host=self.host,
-                port=self.port,
+                port=9000,
                 user=self.user,
                 password=self.password,
                 database=self.db_name
@@ -52,6 +84,7 @@ class BaseClickHouse(BaseModel):
             print(f"❌ Error connecting to ClickHouse: {e}")
             return None
 
+
     def get_tables(self):
         client = self._connect()
 
@@ -59,16 +92,25 @@ class BaseClickHouse(BaseModel):
             return []
 
         try:
-            query = "SELECT name FROM system.tables WHERE database = %s"
-            result = client.execute(query, [self.db_name])
+            query = f"""
+            SELECT name
+            FROM system.tables
+            WHERE database = '{self.db_name}'
+            """
 
-            client.disconnect()
+            if isinstance(client, Client):
+                result = client.execute(query)
+                client.disconnect()
+                return [row[0] for row in result]
 
-            return [row[0] for row in result]
+            else: 
+                result = client.query(query)
+                return [row[0] for row in result.result_rows]
 
         except Exception as e:
             print(f"❌ Error fetching tables: {e}")
             return []
+        
 
     def read_table(self, table_name):
         client = self._connect()
@@ -76,22 +118,32 @@ class BaseClickHouse(BaseModel):
         if client is None:
             return pd.DataFrame()
 
+        query = f"SELECT * FROM `{table_name}`"
+
         try:
-            query = f'SELECT * FROM `{table_name}`'
+            if isinstance(client, Client):
+                data = client.execute(query)
 
-            data = client.execute(query)
+                columns = [
+                    col[0]
+                    for col in client.description_of_result_set
+                ]
 
-            columns = [
-                desc[0]
-                for desc in client.description_of_result_set
-            ]
+                client.disconnect()
 
-            client.disconnect()
+                df = pd.DataFrame(data, columns=columns)
 
-            return pd.DataFrame(
-                data,
-                columns=columns
-            )
+            else:
+                result = client.query(query)
+
+                df = pd.DataFrame(
+                    result.result_rows,
+                    columns=result.column_names
+                )
+
+
+            df = infer_data_types(df)
+            return df
 
         except Exception as e:
             print(f"❌ Error reading table {table_name}: {e}")

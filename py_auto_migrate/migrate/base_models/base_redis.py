@@ -1,6 +1,8 @@
 import pandas as pd
+import json
 import redis
 from py_auto_migrate.migrate.base_models.base import BaseModel
+from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
 
 
 class BaseRedis(BaseModel):
@@ -43,7 +45,6 @@ class BaseRedis(BaseModel):
 
 
     def read_table(self, table_name):
-
         conn = self._connect()
 
         if conn is None:
@@ -51,13 +52,24 @@ class BaseRedis(BaseModel):
 
         try:
             value = conn.get(table_name)
+
             if value is None:
                 return pd.DataFrame()
 
             if isinstance(value, bytes):
-                value = value.decode( "utf-8")
+                value = value.decode("utf-8")
 
-            return pd.DataFrame(value if isinstance(value, list) else [value])
+            data = json.loads(value)
 
-        except Exception:
+            if isinstance(data, dict):
+                data = [data]
+
+            df = pd.DataFrame(data)
+            df = infer_data_types(df)
+            return df
+
+        except :
             return pd.DataFrame()
+
+        finally:
+            conn.close()

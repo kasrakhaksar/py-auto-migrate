@@ -24,7 +24,7 @@ class BaseOracle(BaseModel):
         return user, password, host, port, db_name
 
 
-    def _conn(self):
+    def _connect(self):
 
         user, password, host, port, db_name = self._parse_oracle_uri()
         dsn = f"{host}:{port}/{db_name}"
@@ -37,7 +37,7 @@ class BaseOracle(BaseModel):
 
     def get_tables(self):
 
-        conn = self._conn()
+        conn = self._connect()
         cursor = conn.cursor()
         cursor.execute("SELECT table_name FROM user_tables")
 
@@ -49,7 +49,7 @@ class BaseOracle(BaseModel):
 
     def read_table(self, table_name):
 
-        conn = self._conn()
+        conn = self._connect()
         cursor = conn.cursor()
         cursor.execute(f'SELECT * FROM "{table_name}"')
         rows = cursor.fetchall()

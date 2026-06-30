@@ -2,6 +2,7 @@ import pandas as pd
 from pymongo import MongoClient
 from urllib.parse import urlparse
 from py_auto_migrate.migrate.base_models.base import BaseModel
+from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
 
 
 class BaseMongoDB(BaseModel):
@@ -77,7 +78,13 @@ class BaseMongoDB(BaseModel):
             for doc in data:
                 if "_id" in doc:
                     doc["_id"] = str(doc["_id"])
-            return pd.DataFrame(data)
-        except Exception as e:
-            print(f"❌ Error reading collection '{table_name}': {e}")
+
+                    
+
+            df = pd.DataFrame(data)
+            df = infer_data_types(df)
+
+            return df
+        
+        except :
             return pd.DataFrame()

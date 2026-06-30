@@ -3,7 +3,7 @@ import sqlite3
 from py_auto_migrate.migrate.base_models.base_sqlite import BaseSQLite
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
-from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
+from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper , sqlite_value_mapper
 
 class InsertSQLite(BaseSQLite, BaseInsert):
     def __init__(self, sqlite_uri):
@@ -35,9 +35,6 @@ class InsertSQLite(BaseSQLite, BaseInsert):
         conn = self._connect()
 
         if conn is None:
-            return
-
-        if data is None or data.empty:
             return
 
         try:
@@ -77,13 +74,16 @@ class InsertSQLite(BaseSQLite, BaseInsert):
             values = []
             seen = set()
 
-            rows = list(
-                data[columns]
-                .itertuples(
+            rows = [
+                tuple(
+                    sqlite_value_mapper(value)
+                    for value in row
+                )
+                for row in data[columns].itertuples(
                     index=False,
                     name=None
                 )
-            )
+            ]
 
             for row in rows:
                 if row not in existing_rows and row not in seen:
@@ -125,6 +125,9 @@ class InsertSQLite(BaseSQLite, BaseInsert):
 
         except Exception as e:
             print(e)
+            return False
 
         finally:
             conn.close()
+
+        return True

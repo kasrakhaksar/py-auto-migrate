@@ -1,6 +1,7 @@
 import pandas as pd
 from elasticsearch import Elasticsearch
 from py_auto_migrate.migrate.base_models.base import BaseModel
+from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
 
 
 class BaseElasticsearch(BaseModel):
@@ -9,14 +10,13 @@ class BaseElasticsearch(BaseModel):
         super().__init__(es_uri)
 
     def _connect(self):
+        self.uri = self.uri.replace('elasticsearch://','http://')
         try:
-            es = Elasticsearch(self.uri)
-            if not es.ping():
-                return None
+            es = Elasticsearch([self.uri])
             return es
 
-        except Exception:
-            return None
+        except Exception as e:
+            print(e)
 
     def get_tables(self):
         es = self._connect()
@@ -26,17 +26,17 @@ class BaseElasticsearch(BaseModel):
             return []
 
         try:
-            indices = es.indices.get_alias("*").keys()
+            indices = es.indices.get_alias(index="*")
             return list(indices)
 
-        except Exception:
+        except Exception as e:
             return []
 
     def read_table(self, index_name):
 
         es = self._connect()
-        if es is None:
-            return pd.DataFrame()
+
+
 
         try:
             query = {
@@ -58,7 +58,11 @@ class BaseElasticsearch(BaseModel):
                 hit["_source"] | {"_id": hit["_id"]}
                 for hit in hits
             ]
-            return pd.DataFrame(records)
+
+
+            df = pd.DataFrame(records)
+            df = infer_data_types(df)
+            return df
 
         except Exception:
             return pd.DataFrame()

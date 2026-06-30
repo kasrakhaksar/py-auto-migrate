@@ -20,8 +20,6 @@ class InsertElasticsearch(BaseElasticsearch, BaseInsert):
         if es is None:
             return
 
-        if data is None or data.empty:
-            return
 
         try:
             self._ensure_index(
@@ -98,5 +96,8 @@ class InsertElasticsearch(BaseElasticsearch, BaseInsert):
 
                 print(generated_query)
 
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
+            return False
+        
+        return True

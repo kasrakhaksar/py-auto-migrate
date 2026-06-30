@@ -10,7 +10,7 @@ class InsertMongoDB(BaseMongoDB, BaseInsert):
     def insert(self, data, table_name, ai_ask=None, ai_model=None):
 
         db = self._connect()
-        if db is None or data.empty:
+        if db is None:
             return
 
         try:
@@ -54,5 +54,11 @@ class InsertMongoDB(BaseMongoDB, BaseInsert):
 
                 print(generated_query)
 
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
+            return False
+        
+
+        return True
+
+        
