@@ -4,6 +4,9 @@ from py_auto_migrate.migrate.base_models.base_postgressql import BasePostgresSQL
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
     def __init__(self, pg_uri):
@@ -82,38 +85,13 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
 
                 conn.commit()
 
-                values = list(
-                    data[columns]
-                    .itertuples(
-                        index=False,
-                        name=None
-                    )
+            values = list(
+                data[columns]
+                .itertuples(
+                    index=False,
+                    name=None
                 )
-
-            else:
-                cur.execute(
-                    f'SELECT * FROM "{table_name}"'
-                )
-
-                existing_rows = set(
-                    cur.fetchall()
-                )
-
-                values = []
-                seen = set()
-
-                rows = list(
-                    data[columns]
-                    .itertuples(
-                        index=False,
-                        name=None
-                    )
-                )
-
-                for row in rows:
-                    if row not in existing_rows and row not in seen:
-                        values.append(row)
-                        seen.add(row)
+            )
 
             if values:
                 placeholders = ", ".join(
@@ -149,7 +127,7 @@ class InsertPostgresSQL(BasePostgresSQL, BaseInsert):
                 conn.commit()
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into PostgreSQL table '%s'", table_name)
             return False
 
         finally:

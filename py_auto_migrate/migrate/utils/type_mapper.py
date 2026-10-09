@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 from decimal import Decimal
 from uuid import UUID
+from bson.decimal128 import Decimal128
 
 def sql_type_mapper(dtype, engine):
 
@@ -131,6 +132,45 @@ def dynamodb_value_mapper(value):
     return value
 
 
+def mongodb_value_mapper(value):
+    """Convert pandas and NumPy values into BSON-compatible Python values."""
+    try:
+        missing = pd.isna(value)
+        if isinstance(missing, (bool, np.bool_)) and missing:
+            return None
+    except (TypeError, ValueError):
+        pass
+
+    if isinstance(value, pd.Timestamp):
+        return value.to_pydatetime()
+
+    if isinstance(value, Decimal):
+        return Decimal128(value)
+
+    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
+        return datetime.datetime.combine(value, datetime.time.min)
+
+    if isinstance(value, datetime.time):
+        return value.isoformat()
+
+    if isinstance(value, datetime.timedelta):
+        return str(value)
+
+    if isinstance(value, UUID):
+        return str(value)
+
+    if isinstance(value, np.generic):
+        return mongodb_value_mapper(value.item())
+
+    if isinstance(value, dict):
+        return {key: mongodb_value_mapper(item) for key, item in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [mongodb_value_mapper(item) for item in value]
+
+    return value
+
+
 
 def infer_data_types(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -172,11 +212,19 @@ def infer_data_types(df: pd.DataFrame) -> pd.DataFrame:
 
 
 
-def normalize_datetime(df):
+def normalize_datetime(df: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Normalize datetime columns without changing missing-value semantics.
+
+    ``None`` is a valid result from a source adapter when a table could not be
+    read.  Keep it as ``None`` so callers can handle that case explicitly.
+    Missing values must not be replaced with ``0``: doing so changes the data
+    and can also change the inferred type of a column.
+    """
+    if df is None:
+        return None
+
     df = df.copy()
 
-    df = df.fillna(0)
-    
     for col in df.columns:
         s = df[col]
 

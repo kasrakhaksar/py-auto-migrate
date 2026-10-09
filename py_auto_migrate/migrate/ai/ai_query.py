@@ -1,5 +1,10 @@
 import os
 from openai import OpenAI
+from py_auto_migrate.core.exceptions import AIQueryError
+from py_auto_migrate.core.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 class AIQuery:
     def __init__(self, ask: str, table_name: str, db_type: str , table_columns :str):
@@ -9,7 +14,9 @@ class AIQuery:
         self.table_columns = table_columns
         self.api_key = os.environ.get("OPENAI_API_KEY")
         if not self.api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment variables")
+            raise AIQueryError(
+                "OPENAI_API_KEY was not found in environment variables"
+            )
 
     def sql_generate(self, model: str):
         client = OpenAI(api_key=self.api_key)
@@ -27,14 +34,18 @@ class AIQuery:
         """
     
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.1
-        )
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.1
+            )
+        except Exception as exc:
+            logger.exception("AI SQL query generation failed")
+            raise AIQueryError("Failed to generate SQL query") from exc
 
         query = response.choices[0].message.content.strip()
 
@@ -58,14 +69,18 @@ class AIQuery:
         """
 
     
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.1
-        )
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.1
+            )
+        except Exception as exc:
+            logger.exception("AI NoSQL query generation failed")
+            raise AIQueryError("Failed to generate NoSQL query") from exc
 
         query = response.choices[0].message.content.strip()
 

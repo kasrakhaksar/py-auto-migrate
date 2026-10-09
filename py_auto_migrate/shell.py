@@ -7,6 +7,10 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.styles import Style
+from py_auto_migrate.core.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 console = Console()
 
@@ -28,6 +32,7 @@ def run_dashboard(args):
     
         cli_main.main(args=cmd_args, prog_name="py-auto-migrate", standalone_mode=False)
     except Exception as e:
+        logger.exception("Failed to start dashboard from shell")
         console.print(f"❌ [error]Failed to start dashboard: {escape(str(e))}[/error]")
 
 
@@ -82,6 +87,8 @@ This shell allows you to migrate data between different databases interactively.
   [command]migrate --source "<uri>" --target "<uri>" [/command]
       → Migrate data from one database to another.
         Use [--table] to migrate a single table or collection (optional).
+        Use [--pgbar] to show row-level progress in the terminal.
+        Use [--skip-existing] to skip source rows already present in the target (optional; disabled by default).
   
   [command]migrate --source "<uri>" --target "<uri>" --ai-ask "<query>" [/command]
       → Use AI to intelligently filter/transform data during migration.
@@ -209,6 +216,7 @@ Type [command]exit[/command] to leave this shell.
         except KeyboardInterrupt:
             console.print("\n⚠ [info]Use 'exit' to quit safely.[/info]")
         except Exception as e:
+            logger.exception("Interactive shell command failed")
             console.print(f"⚠ [error]Error: {escape(str(e))}[/error]")
 
 

@@ -5,6 +5,9 @@ from py_auto_migrate.migrate.base_models.base_clickhouse import BaseClickHouse
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class InsertClickHouse(BaseClickHouse, BaseInsert):
@@ -137,7 +140,7 @@ class InsertClickHouse(BaseClickHouse, BaseInsert):
 
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into ClickHouse table '%s'", table_name)
             return False
 
         finally:

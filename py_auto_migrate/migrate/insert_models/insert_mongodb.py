@@ -1,6 +1,10 @@
 from py_auto_migrate.migrate.base_models.base_mongodb import BaseMongoDB
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
+from py_auto_migrate.migrate.utils.type_mapper import mongodb_value_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class InsertMongoDB(BaseMongoDB, BaseInsert):
@@ -16,26 +20,14 @@ class InsertMongoDB(BaseMongoDB, BaseInsert):
         try:
             collection = db[table_name]
 
-            existing_set = set()
-
-            try:
-                cursor = collection.find({}, {"_id": 0})
-
-                for doc in cursor:
-                    existing_set.add(tuple(doc.values()))
-
-            except Exception:
-                pass
-
             new_docs = []
 
             for _, row in data.iterrows():
-                row_dict = row.to_dict()
-                row_key = tuple(row_dict.values())
-
-                if row_key not in existing_set:
-                    new_docs.append(row_dict)
-                    existing_set.add(row_key)
+                row_dict = {
+                    key: mongodb_value_mapper(value)
+                    for key, value in row.to_dict().items()
+                }
+                new_docs.append(row_dict)
 
             if new_docs:
                 collection.insert_many(new_docs, ordered=False)
@@ -52,13 +44,11 @@ class InsertMongoDB(BaseMongoDB, BaseInsert):
 
                 generated_query = ai_query_obj.nosql_generate(model=ai_model)
 
-                print(generated_query)
+                logger.debug("Generated AI query for MongoDB collection '%s'", table_name)
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into MongoDB collection '%s'", table_name)
             return False
-        
+
 
         return True
-
-        

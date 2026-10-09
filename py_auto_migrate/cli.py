@@ -5,6 +5,14 @@ import uvicorn
 import time
 import warnings
 warnings.filterwarnings('ignore')
+import logging
+
+from py_auto_migrate.core.logging import configure_logging, get_logger
+from py_auto_migrate.core.exceptions import PyAutoMigrateError
+from py_auto_migrate.core.progress import ProgressSnapshot, ProgressTracker
+
+
+logger = get_logger(__name__)
 
 try:
     from py_auto_migrate.migrate.mapping import MIGRATION_MAP, ALL_DATABASES_LIST , AI_SUPPORTED_DATABASES , DEP_SUPPORTED_DATABASES
@@ -19,6 +27,40 @@ def get_uri(uri):
         if uri.startswith(prefix):
             return prefix.lower()
     return None
+
+
+def _render_progress(snapshot: ProgressSnapshot) -> None:
+    """Render row-based progress without enabling a progress bar by default."""
+    if not snapshot.current_table:
+        return
+
+    width = 32
+    completed = int(width * snapshot.percent / 100)
+    bar = "=" * completed + "-" * (width - completed)
+    message = (
+        f"\r[{bar}] {snapshot.percent:6.2f}% "
+        f"{snapshot.current_table_processed}/{snapshot.current_table_total} rows "
+        f"({snapshot.current_table})"
+    )
+    click.echo(message, nl=snapshot.status in {"completed", "completed_with_errors"})
+
+
+def _render_migration_summary(summary: dict) -> None:
+    click.echo("\nMigration summary:")
+    click.echo(
+        f"Tables: {summary['tables_succeeded']} succeeded, "
+        f"{summary['tables_failed']} failed, {summary['tables_empty']} empty, "
+        f"{summary['tables_already_present']} already up to date "
+        f"({summary['tables_total']} total)"
+    )
+    click.echo(
+        f"Rows: {summary['rows_read']} read, "
+        f"{summary['rows_submitted']} submitted successfully, "
+        f"{summary['rows_skipped_existing']} already present"
+    )
+    for result in summary["table_results"]:
+        if result["status"] == "failed":
+            click.echo(f"  Failed: {result['table']} — {result['error']}")
 
 
 @click.group(help="""
@@ -135,10 +177,11 @@ or:
     Manage multiple migration jobs
 
 """)
+@click.option('--verbose', is_flag=True, help='Enable detailed debug logging.')
+@click.option('--log-file', type=click.Path(dir_okay=False), help='Write logs to this file.')
+def main(verbose, log_file):
+    configure_logging(logging.DEBUG if verbose else logging.INFO, log_file)
 
-
-def main():
-    pass
 
 
 @main.command(help="""
@@ -152,6 +195,8 @@ Parameters:
 --ai-ask      (Optional) Natural language query
 --ai-model    (Optional) OpenAI model (default: gpt-3.5-turbo)
 --dep         (Optional) Enable forigen key dependency mode
+--pgbar       (Optional) Show row-based progress in the terminal
+--skip-existing (Optional) Skip source rows already present in the target (disabled by default)
 
 """)
 
@@ -162,9 +207,11 @@ Parameters:
 @click.option('--ai-ask', required=False, help="(optional) Natural language query for AI (e.g., 'i want to insert users with age > 25')")
 @click.option('--ai-model', required=False, help="(optional) OpenAI model (default: gpt-3.5-turbo)")
 @click.option('--dep', is_flag=True, help='(optional) Enable forigen key dependency mode')
+@click.option('--pgbar', is_flag=True, help='Show row-based migration progress in the terminal.')
+@click.option('--skip-existing', is_flag=True, help='Skip source rows already present in the target (disabled by default).')
 
 
-def migrate(source, target, table, ai_ask, ai_model , dep):
+def migrate(source, target, table, ai_ask, ai_model, dep, pgbar, skip_existing):
 
 
     source_type = get_uri(source)
@@ -196,7 +243,13 @@ def migrate(source, target, table, ai_ask, ai_model , dep):
 
 
     try:
-        migration = migration_class(source, target)
+        progress = ProgressTracker(_render_progress) if pgbar else None
+        migration = migration_class(
+            source,
+            target,
+            progress=progress,
+            skip_existing=skip_existing,
+        )
 
         if ai_ask and not ai_model:
             ai_model = 'gpt-3.5-turbo'
@@ -206,8 +259,14 @@ def migrate(source, target, table, ai_ask, ai_model , dep):
         else:
             migration.migrate_all(ai_ask, ai_model ,dep)
 
-    except :
-        raise
+        _render_migration_summary(migration.summary)
+
+    except PyAutoMigrateError:
+        logger.exception("Migration failed")
+        raise click.ClickException("Migration failed. Check the log for details.")
+    except Exception as exc:
+        logger.exception("Unexpected migration failure")
+        raise click.ClickException(str(exc)) from exc
     
 
 

@@ -2,6 +2,9 @@ import json
 from py_auto_migrate.migrate.base_models.base_redis import BaseRedis
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 class InsertRedis(BaseRedis, BaseInsert):
     def __init__(self, redis_uri, db_index=None):
@@ -32,31 +35,11 @@ class InsertRedis(BaseRedis, BaseInsert):
                 except Exception:
                     existing_data = []
 
-            existing_set = {
-                json.dumps(
-                    item,
-                    sort_keys=True,
-                    default=str
-                )
-                for item in existing_data
-            }
-
-            new_data = []
-
             rows = data.to_dict(
                 orient="records"
             )
 
-            for item in rows:
-                item_str = json.dumps(
-                    item,
-                    sort_keys=True,
-                    default=str
-                )
-
-                if item_str not in existing_set:
-                    new_data.append(item)
-                    existing_set.add(item_str)
+            new_data = rows
 
             if new_data:
                 existing_data.extend(new_data)
@@ -92,10 +75,10 @@ class InsertRedis(BaseRedis, BaseInsert):
                     model=ai_model
                 )
 
-                print(generated_query)
+                logger.debug("Generated AI query for Redis key '%s'", table_name)
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into Redis key '%s'", table_name)
             return False
 
         finally:

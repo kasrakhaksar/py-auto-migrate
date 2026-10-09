@@ -4,7 +4,9 @@ import pandas as pd
 from botocore.exceptions import ClientError
 from urllib.parse import urlparse, parse_qs
 from py_auto_migrate.migrate.base_models.base import BaseModel
-from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseDynamoDB(BaseModel):
@@ -71,6 +73,7 @@ class BaseDynamoDB(BaseModel):
             return tables
 
         except ClientError:
+            logger.exception("Failed to list DynamoDB tables")
             return []
 
     def read_table(self, table_name):
@@ -93,9 +96,8 @@ class BaseDynamoDB(BaseModel):
                 )
 
             df = pd.DataFrame(items)
-            df = infer_data_types(df)
             return df
 
         except ClientError:
+            logger.exception("Failed to read DynamoDB table '%s'", table_name)
             return pd.DataFrame()
-    

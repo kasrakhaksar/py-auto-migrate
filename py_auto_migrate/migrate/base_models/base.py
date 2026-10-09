@@ -16,3 +16,7 @@ class BaseModel(ABC):
     @abstractmethod
     def read_table(self, table_name):
         pass
+
+    def get_foreignkey_dependencies(self, table_name: str) -> list[str]:
+        """Return dependencies when the source supports foreign keys."""
+        return []

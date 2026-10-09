@@ -5,6 +5,9 @@ from py_auto_migrate.migrate.base_models.base_mysql import BaseMySQL
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class InsertMySQL(BaseMySQL, BaseInsert):
@@ -78,32 +81,13 @@ class InsertMySQL(BaseMySQL, BaseInsert):
                 cursor.execute(create_query)
                 conn.commit()
 
-                existing_rows = set()
-
-            else:
-
-                cursor.execute(
-                    f"SELECT * FROM `{table_name}`"
-                )
-
-                existing_rows = set(
-                    cursor.fetchall()
-                )
-
             rows = list(
                 data[columns].itertuples(
                     index=False,
                     name=None
                 )
             )
-
-            values = []
-            seen = set()
-
-            for row in rows:
-                if row not in existing_rows and row not in seen:
-                    values.append(row)
-                    seen.add(row)
+            values = rows
 
             if values:
 
@@ -145,7 +129,7 @@ class InsertMySQL(BaseMySQL, BaseInsert):
 
                 conn.commit()
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into MySQL table '%s'", table_name)
             return False
             
         finally:

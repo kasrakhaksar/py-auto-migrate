@@ -1,7 +1,9 @@
 import pandas as pd
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 from py_auto_migrate.migrate.base_models.base import BaseModel
-from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseElasticsearch(BaseModel):
@@ -15,8 +17,9 @@ class BaseElasticsearch(BaseModel):
             es = Elasticsearch([self.uri])
             return es
 
-        except Exception as e:
-            print(e)
+        except Exception:
+            logger.exception("Elasticsearch connection failed")
+            return None
 
     def get_tables(self):
         es = self._connect()
@@ -29,7 +32,8 @@ class BaseElasticsearch(BaseModel):
             indices = es.indices.get_alias(index="*")
             return list(indices)
 
-        except Exception as e:
+        except Exception:
+            logger.exception("Failed to list Elasticsearch indices")
             return []
 
     def read_table(self, index_name):
@@ -39,30 +43,22 @@ class BaseElasticsearch(BaseModel):
 
 
         try:
-            query = {
-                "query": {
-                    "match_all": {}
-                },
-                "size": 10000
-            }
-            result = es.search(
-                index=index_name,
-                body=query
-            )
-
-            hits = result.get("hits",{}).get("hits",[])
-            if not hits:
-                return pd.DataFrame()
-
             records = [
                 hit["_source"] | {"_id": hit["_id"]}
-                for hit in hits
+                for hit in helpers.scan(
+                    es,
+                    index=index_name,
+                    query={"query": {"match_all": {}}},
+                    size=1000,
+                )
             ]
 
+            if not records:
+                return pd.DataFrame()
 
             df = pd.DataFrame(records)
-            df = infer_data_types(df)
             return df
 
         except Exception:
+            logger.exception("Failed to read Elasticsearch index '%s'", index_name)
             return pd.DataFrame()

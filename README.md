@@ -75,6 +75,8 @@ py-auto-migrate migrate --source <SOURCE_URI> --target <TARGET_URI>
 | `--ai-ask`     | **Optional.** Natural language query for **AI-powered**.                                     |
 | `--ai-model`   | **Optional.** OpenAI model (default: gpt-3.5-turbo).                                         |
 | `--dep`        | **Optional.** Table forigen key dependency.                                                  |
+| `--pgbar`      | **Optional.** Show row-based migration progress in the terminal.                             |
+| `--skip-existing` | **Optional.** Skip source rows already present in the target. Disabled by default.      |
 
 ### Examples
 
@@ -83,8 +85,14 @@ py-auto-migrate migrate --source <SOURCE_URI> --target <TARGET_URI>
 ```bash
 py-auto-migrate migrate \
   --source "mongodb://user:pass@localhost:27017/source_db" \
-  --target "mysql://user:pass@localhost:3306/target_db"
+  --target "mysql://user:pass@localhost:3306/target_db" \
+  --pgbar \
+  --skip-existing
 ```
+
+`--pgbar` prints row-level progress while the command runs. `--skip-existing`
+checks destination rows and submits only source rows that are not already there;
+it is disabled by default. See the note below for how duplicate source rows are handled.
 
 **2. Migrate a single PostgreSQL table to a new MongoDB collection:**
 
@@ -96,6 +104,13 @@ py-auto-migrate migrate \
 ```
 
 > **The Magic:** If the target database or table doesn't exist, **Py-Auto-Migrate automatically creates it for you!** It intelligently maps source data types to the appropriate target schema.
+
+By default, migration appends every source row, including duplicate rows. Use
+`--skip-existing` to skip only copies already present in the target. This is a
+row-content comparison, so it may read the existing target table into memory.
+Duplicate rows in the source are preserved according to their count: if the
+source has two identical rows and the target has one, one row is added. Without
+`--skip-existing`, running the same migration again appends the rows again.
 
 
 **3. Query using AI (Target must be a relational database):**
@@ -164,6 +179,11 @@ py-auto-migrate dashboard --host "localhost" --port 8000
 - **AI Query UI** – Use natural language queries with a simple text box  
 - **Job Management** – Run, monitor, and manage multiple migration jobs  
 - **One-Click Migrate** – Start migrations with a single button click  
+
+The dashboard skips rows already present in the target by default and writes
+each table in one call to avoid the overhead of progress-driven write batches.
+Uncheck the option to append every source row. Progress updates advance after
+each table write completes.
 
 ---
 

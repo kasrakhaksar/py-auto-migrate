@@ -4,6 +4,9 @@ from py_auto_migrate.migrate.base_models.base_sqlite import BaseSQLite
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import sql_type_mapper , sqlite_value_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 class InsertSQLite(BaseSQLite, BaseInsert):
     def __init__(self, sqlite_uri):
@@ -63,17 +66,6 @@ class InsertSQLite(BaseSQLite, BaseInsert):
                 '''
             )
 
-            cursor.execute(
-                f'SELECT * FROM "{table_name}"'
-            )
-
-            existing_rows = set(
-                cursor.fetchall()
-            )
-
-            values = []
-            seen = set()
-
             rows = [
                 tuple(
                     sqlite_value_mapper(value)
@@ -85,10 +77,7 @@ class InsertSQLite(BaseSQLite, BaseInsert):
                 )
             ]
 
-            for row in rows:
-                if row not in existing_rows and row not in seen:
-                    values.append(row)
-                    seen.add(row)
+            values = rows
 
             if values:
                 placeholders = ", ".join(
@@ -124,7 +113,7 @@ class InsertSQLite(BaseSQLite, BaseInsert):
                 conn.commit()
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into SQLite table '%s'", table_name)
             return False
 
         finally:

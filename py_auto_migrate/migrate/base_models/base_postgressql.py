@@ -1,6 +1,9 @@
 import psycopg2
 import pandas as pd
 from py_auto_migrate.migrate.base_models.base import BaseModel
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BasePostgresSQL(BaseModel):
@@ -28,6 +31,7 @@ class BasePostgresSQL(BaseModel):
                 dbname=db_name
             )
         except Exception:
+            logger.exception("PostgreSQL connection failed")
             return None
 
     def get_tables(self):

@@ -1,9 +1,11 @@
 import pandas as pd
 from clickhouse_driver import Client
 from py_auto_migrate.migrate.base_models.base import BaseModel
-from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from py_auto_migrate.core.logging import get_logger
 from clickhouse_driver import Client
 import clickhouse_connect
+
+logger = get_logger(__name__)
 
 
 
@@ -55,6 +57,7 @@ class BaseClickHouse(BaseModel):
                 client.execute("SELECT 1")
                 return client
             except Exception:
+                logger.debug("Native ClickHouse connection on configured port failed", exc_info=True)
                 pass
 
         try:
@@ -68,6 +71,7 @@ class BaseClickHouse(BaseModel):
             client.query("SELECT 1")
             return client
         except Exception:
+            logger.debug("HTTP ClickHouse connection on configured port failed", exc_info=True)
             pass
 
         try:
@@ -80,8 +84,8 @@ class BaseClickHouse(BaseModel):
             )
             client.execute("SELECT 1")
             return client
-        except Exception as e:
-            print(f"❌ Error connecting to ClickHouse: {e}")
+        except Exception:
+            logger.exception("ClickHouse connection failed")
             return None
 
 
@@ -107,8 +111,8 @@ class BaseClickHouse(BaseModel):
                 result = client.query(query)
                 return [row[0] for row in result.result_rows]
 
-        except Exception as e:
-            print(f"❌ Error fetching tables: {e}")
+        except Exception:
+            logger.exception("Failed to list ClickHouse tables")
             return []
         
 
@@ -142,9 +146,8 @@ class BaseClickHouse(BaseModel):
                 )
 
 
-            df = infer_data_types(df)
             return df
 
-        except Exception as e:
-            print(f"❌ Error reading table {table_name}: {e}")
+        except Exception:
+            logger.exception("Failed to read ClickHouse table '%s'", table_name)
             return pd.DataFrame()

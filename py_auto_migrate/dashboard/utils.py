@@ -5,7 +5,8 @@ def build_connection(db_type: str, data: dict) -> str:
     db_type = db_type.lower()
 
     if db_type in ["postgresql", "mysql", "mariadb", "mssql", "clickhouse"]:
-        return f"{db_type}://{data.get('username')}:{data.get('password')}@{data.get('host')}:{data.get('port')}/{data.get('db_name')}"
+        auth = f"{data.get('username')}:{data.get('password')}@" if data.get("username") else ""
+        return f"{db_type}://{auth}{data.get('host')}:{data.get('port')}/{data.get('db_name')}"
 
     elif db_type == "mongodb":
         if data.get("username") and data.get("password"):
@@ -31,7 +32,8 @@ def build_connection(db_type: str, data: dict) -> str:
         )
 
     elif db_type == "elasticsearch":
-        return f"elasticsearch://{data['username']}:{data['password']}@{data['host']}:{data['port']}"
+        auth = f"{data['username']}:{data['password']}@" if data.get("username") else ""
+        return f"elasticsearch://{auth}{data['host']}:{data['port']}"
 
     else:
         raise ValueError(f"Unsupported DB type: {db_type}")

@@ -2,7 +2,9 @@ import pandas as pd
 from pymongo import MongoClient
 from urllib.parse import urlparse
 from py_auto_migrate.migrate.base_models.base import BaseModel
-from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseMongoDB(BaseModel):
@@ -44,7 +46,7 @@ class BaseMongoDB(BaseModel):
 
 
         except Exception as e:
-            print( f"❌ MongoDB Connection Error: {e}")
+            logger.exception("MongoDB connection failed")
 
             return None
 
@@ -55,24 +57,24 @@ class BaseMongoDB(BaseModel):
         db = self._connect()
 
         if db is None:
-            return []
+            raise RuntimeError("Could not connect to MongoDB to list collections")
 
 
         try:
-            return db.list_table_names()
-        except Exception as e:
-            print(f"❌ Error getting collections: {e}")
-            return []
+            return db.list_collection_names()
+        except Exception:
+            logger.exception("Failed to list MongoDB collections")
+            raise
     def read_table(self, table_name):
 
         db = self._connect()
         if db is None:
-            return pd.DataFrame()
+            raise RuntimeError("Could not connect to MongoDB to read collection")
         try:
             data = list(db[table_name].find())
 
             if not data:
-                print(f"❌ Collection '{table_name}' is empty.")
+                logger.warning("MongoDB collection '%s' is empty", table_name)
                 return pd.DataFrame()
 
             for doc in data:
@@ -82,9 +84,9 @@ class BaseMongoDB(BaseModel):
                     
 
             df = pd.DataFrame(data)
-            df = infer_data_types(df)
 
             return df
         
-        except :
-            return pd.DataFrame()
+        except Exception:
+            logger.exception("Failed to read MongoDB collection '%s'", table_name)
+            raise

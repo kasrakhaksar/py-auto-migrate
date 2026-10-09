@@ -1,4 +1,3 @@
-import json
 import pandas as pd
 
 from botocore.exceptions import ClientError
@@ -7,6 +6,9 @@ from py_auto_migrate.migrate.base_models.base_dynamodb import BaseDynamoDB
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
 from py_auto_migrate.migrate.utils.type_mapper import dynamodb_value_mapper
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class InsertDynamoDB(BaseDynamoDB, BaseInsert):
@@ -22,33 +24,6 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
             for key, value in item.items()
         }
 
-    def _existing_items(self, table):
-
-        existing = set()
-
-        response = table.scan()
-
-        while True:
-
-            for item in response.get("Items", []):
-
-                existing.add(
-                    json.dumps(
-                        item,
-                        sort_keys=True,
-                        default=str
-                    )
-                )
-
-            if "LastEvaluatedKey" not in response:
-                break
-
-            response = table.scan(
-                ExclusiveStartKey=response["LastEvaluatedKey"]
-            )
-
-        return existing
-
     def insert(self, data, table_name, ai_ask=None, ai_model=None):
 
         conn = self._connect()
@@ -63,7 +38,6 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
                 table = conn.Table(table_name)
                 table.load()
 
-                existing_items = self._existing_items(table)
 
             except ClientError as e:
 
@@ -102,8 +76,6 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
 
                 table.wait_until_exists()
 
-                existing_items = set()
-
             records = data.to_dict(
                 orient="records"
             )
@@ -117,15 +89,7 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
 
                 item = self._serialize_item(item)
 
-                unique_key = json.dumps(
-                    item,
-                    sort_keys=True,
-                    default=str
-                )
-
-                if unique_key not in existing_items:
-                    new_items.append(item)
-                    existing_items.add(unique_key)
+                new_items.append(item)
 
             with table.batch_writer() as batch:
 
@@ -148,11 +112,11 @@ class InsertDynamoDB(BaseDynamoDB, BaseInsert):
                     model=ai_model
                 )
 
-                print(generated_query)
+                logger.debug("Generated AI query for DynamoDB table '%s'", table_name)
 
             return True
 
         except Exception as e:
 
-            print(e)
+            logger.exception("Failed to insert data into DynamoDB table '%s'", table_name)
             return False

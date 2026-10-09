@@ -2,6 +2,9 @@ from elasticsearch import helpers
 from py_auto_migrate.migrate.base_models.base_elasticsearch import BaseElasticsearch
 from py_auto_migrate.migrate.insert_models.base import BaseInsert
 from py_auto_migrate.migrate.ai.ai_query import AIQuery
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 class InsertElasticsearch(BaseElasticsearch, BaseInsert):
     def __init__(self, es_uri):
@@ -27,49 +30,16 @@ class InsertElasticsearch(BaseElasticsearch, BaseInsert):
                 table_name
             )
 
-            existing_set = set()
-
-            try:
-                query = {
-                    "query": {
-                        "match_all": {}
-                    }
-                }
-
-                res = es.search(
-                    index=table_name,
-                    body=query,
-                    size=10000
-                )
-
-                for hit in res["hits"]["hits"]:
-                    existing_set.add(
-                        tuple(hit["_source"].values())
-                    )
-
-            except Exception:
-                existing_set = set()
-
             records = data.to_dict(
                 orient="records"
             )
-
-            new_docs = []
-
-            for item in records:
-                key = tuple(item.values())
-
-                if key not in existing_set:
-                    new_docs.append(item)
-                    existing_set.add(key)
-
-            if new_docs:
+            if records:
                 actions = [
                     {
                         "_index": table_name,
                         "_source": item
                     }
-                    for item in new_docs
+                    for item in records
                 ]
 
                 helpers.bulk(
@@ -94,10 +64,10 @@ class InsertElasticsearch(BaseElasticsearch, BaseInsert):
                     model=ai_model
                 )
 
-                print(generated_query)
+                logger.debug("Generated AI query for Elasticsearch index '%s'", table_name)
 
         except Exception as e:
-            print(e)
+            logger.exception("Failed to insert data into Elasticsearch index '%s'", table_name)
             return False
         
         return True

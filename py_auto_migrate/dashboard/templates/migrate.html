@@ -1,198 +1,223 @@
 {% extends "base.html" %}
 
-{% block title %}<title>Py Auto Migrate - Migration Dashboard</title>{% endblock title %}
+{% block title %}<title>Migration workspace · Py Auto Migrate</title>{% endblock title %}
 
 {% block css %}<link rel="stylesheet" href="{{ url_for('static', path='css/migrate.css') }}">{% endblock css %}
 
 {% block migrate %}
-
-    <div class="migration-card mt-4">
-
-        <div class="card-header-custom">
-            <span class="hero-badge">DATABASE MIGRATION ENGINE</span>
-            <h1>Start New Migration</h1>
-            <p>
-                Configure source and target databases independently.
-            </p>
+<main class="migration-page container">
+    <header class="page-heading">
+        <div>
+            <div class="eyebrow"><span class="eyebrow-dot"></span> MIGRATION WORKSPACE</div>
+            <h1>Move your data</h1>
+            <p>Choose the source and destination, then decide what to migrate.</p>
         </div>
+        <div class="ready-badge"><span></span> Ready to configure</div>
+    </header>
 
-        <div class="card-body">
-
-            <form id="migrateForm" method="post" action="/migrate">
-
-                <div class="section-title">Source Database</div>
-
-                <div class="row g-4">
-
-                    <div class="col-md-6">
-                        <label>Source Type</label>
-                        <select id="source" name="source" class="form-select">
-                            <option disabled selected>Select source</option>
-                            {% for db in databases %}
-                            <option value="{{ db }}">{{ db|capitalize }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 field-s field-host">
-                        <label>Host</label>
-                        <input name="source_host" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-port">
-                        <label>Port</label>
-                        <input name="source_port" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-db_name">
-                        <label>Database</label>
-                        <input name="source_db_name" class="form-control">
-                    </div>
-
-                    
-                    <div class="col-md-6 field-s field-table">
-                        <label>Table</label>
-                        <input name="table" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-username">
-                        <label>Username</label>
-                        <input name="source_username" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-password">
-                        <label>Password</label>
-                        <input type="password" name="source_password" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-file_path">
-                        <label>SQLite File</label>
-                        <input name="source_file_path" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-service_name">
-                        <label>Service Name</label>
-                        <input name="source_service_name" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-aws_access_key">
-                        <label>AWS Access Key</label>
-                        <input name="source_aws_access_key" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-s field-aws_secret_key">
-                        <label>AWS Secret Key</label>
-                        <input name="source_aws_secret_key" class="form-control">
-                    </div>
-
-
-                    <div class="col-md-6 field-s field-region">
-                        <label>Region</label>
-                        <input name="source_region" class="form-control" placeholder="us-east-1">
-                    </div>
-
-                </div>
-
-                <div class="migration-divider my-5">
-                    <span>➡️ MIGRATION FLOW ➡️</span>
-                </div>
-
-                <div class="section-title">Target Database</div>
-
-                <div class="row g-4">
-
-                    <div class="col-md-6">
-                        <label>Target Type</label>
-                        <select id="target" name="target" class="form-select">
-                            <option disabled selected>Select target</option>
-                            {% for db in databases %}
-                            <option value="{{ db }}">{{ db|capitalize }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 field-t field-host">
-                        <label>Host</label>
-                        <input name="target_host" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-port">
-                        <label>Port</label>
-                        <input name="target_port" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-db_name">
-                        <label>Database</label>
-                        <input name="target_db_name" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-username">
-                        <label>Username</label>
-                        <input name="target_username" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-password">
-                        <label>Password</label>
-                        <input type="password" name="target_password" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-file_path">
-                        <label>SQLite File</label>
-                        <input name="target_file_path" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-service_name">
-                        <label>Service Name</label>
-                        <input name="target_service_name" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-aws_access_key">
-                        <label>AWS Access Key</label>
-                        <input name="target_aws_access_key" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-aws_secret_key">
-                        <label>AWS Secret Key</label>
-                        <input name="target_aws_secret_key" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 field-t field-region">
-                        <label>Region</label>
-                        <input name="target_region" class="form-control" placeholder="us-east-1">
-                    </div>
-
-                </div>
-
-
-                <div class="mt-5 section-title">AI Assisted Migration</div>
-
-                <div class="ai-box">
-                    <div class="row g-4">
-
-                        <div class="col-md-6">
-                            <label>AI Model</label>
-                            <input name="ai_model" class="form-control" placeholder="gpt-4o">
-                        </div>
-
-                        <div class="col-12">
-                            <label>AI Query</label>
-                            <textarea name="ai_ask" rows="5" class="form-control"></textarea>
-                        </div>
-
-                    </div>
-                </div>
-
-                <button class="btn btn-migrate w-100 mt-5 text-light">
-                    Launch Migration
-                </button>
-
-            </form>
-
-        </div>
+    <div class="step-track" aria-label="Migration setup steps">
+        <div class="step-item is-current"><span>1</span><div><strong>Connections</strong><small>Choose databases</small></div></div>
+        <div class="step-line"></div>
+        <div class="step-item"><span>2</span><div><strong>Migration</strong><small>Select data and options</small></div></div>
+        <div class="step-line"></div>
+        <div class="step-item"><span>3</span><div><strong>Review</strong><small>Run and inspect results</small></div></div>
     </div>
 
+    <form id="migrateForm" method="post" action="/migrate" novalidate>
+        <section class="connection-grid" aria-label="Database connections">
+            <article class="connection-card source-card">
+                <div class="connection-heading">
+                    <div class="connection-icon source-icon"><i class="bi bi-box-arrow-up-right"></i></div>
+                    <div><span class="connection-kicker">STEP 01 · SOURCE</span><h2>Where is your data?</h2></div>
+                </div>
 
+                <div class="field-block">
+                    <label for="source">Database type</label>
+                    <select id="source" name="source" class="form-select" required>
+                        <option value="" selected disabled>Select a source database</option>
+                        {% for db in databases %}<option value="{{ db }}">{{ db|capitalize }}</option>{% endfor %}
+                    </select>
+                </div>
 
-    {% block js %}<script src="{{ url_for('static', path='js/migrate.js') }}"></script>{% endblock js %}
-    
+                <div class="connection-fields">
+                    <div class="connection-field field-s field-host">
+                        <label for="source_host">Host</label>
+                        <input id="source_host" name="source_host" class="form-control" placeholder="localhost" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-s field-port">
+                        <label for="source_port">Port</label>
+                        <input id="source_port" name="source_port" class="form-control" inputmode="numeric" placeholder="3306">
+                    </div>
+                    <div class="connection-field field-s field-db_name">
+                        <label for="source_db_name">Database name</label>
+                        <input id="source_db_name" name="source_db_name" class="form-control" placeholder="my_database">
+                    </div>
+                    <div class="connection-field field-s field-username">
+                        <label for="source_username">Username</label>
+                        <input id="source_username" name="source_username" class="form-control" autocomplete="username">
+                    </div>
+                    <div class="connection-field field-s field-password">
+                        <label for="source_password">Password</label>
+                        <input id="source_password" type="password" name="source_password" class="form-control" autocomplete="current-password">
+                    </div>
+                    <div class="connection-field field-s field-file_path field-wide">
+                        <label for="source_file_path">SQLite file path</label>
+                        <input id="source_file_path" name="source_file_path" class="form-control" placeholder="D:\\data\\source.db" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-s field-service_name">
+                        <label for="source_service_name">Service name</label>
+                        <input id="source_service_name" name="source_service_name" class="form-control" placeholder="ORCLPDB1">
+                    </div>
+                    <div class="connection-field field-s field-aws_access_key field-wide">
+                        <label for="source_aws_access_key">AWS access key</label>
+                        <input id="source_aws_access_key" name="source_aws_access_key" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-s field-aws_secret_key field-wide">
+                        <label for="source_aws_secret_key">AWS secret key</label>
+                        <input id="source_aws_secret_key" type="password" name="source_aws_secret_key" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="connection-field field-s field-region">
+                        <label for="source_region">AWS region</label>
+                        <input id="source_region" name="source_region" class="form-control" placeholder="us-east-1">
+                    </div>
+                </div>
+                <p class="connection-hint" id="sourceHint">Select a database to see the fields needed to connect.</p>
+            </article>
+
+            <div class="flow-connector" aria-hidden="true"><i class="bi bi-arrow-right"></i></div>
+
+            <article class="connection-card target-card">
+                <div class="connection-heading">
+                    <div class="connection-icon target-icon"><i class="bi bi-box-arrow-in-down-left"></i></div>
+                    <div><span class="connection-kicker">STEP 02 · DESTINATION</span><h2>Where should it go?</h2></div>
+                </div>
+
+                <div class="field-block">
+                    <label for="target">Database type</label>
+                    <select id="target" name="target" class="form-select" required>
+                        <option value="" selected disabled>Select a destination database</option>
+                        {% for db in databases %}<option value="{{ db }}">{{ db|capitalize }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div class="connection-fields">
+                    <div class="connection-field field-t field-host">
+                        <label for="target_host">Host</label>
+                        <input id="target_host" name="target_host" class="form-control" placeholder="localhost" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-t field-port">
+                        <label for="target_port">Port</label>
+                        <input id="target_port" name="target_port" class="form-control" inputmode="numeric" placeholder="27017">
+                    </div>
+                    <div class="connection-field field-t field-db_name">
+                        <label for="target_db_name">Database name</label>
+                        <input id="target_db_name" name="target_db_name" class="form-control" placeholder="my_database">
+                    </div>
+                    <div class="connection-field field-t field-username">
+                        <label for="target_username">Username</label>
+                        <input id="target_username" name="target_username" class="form-control" autocomplete="username">
+                    </div>
+                    <div class="connection-field field-t field-password">
+                        <label for="target_password">Password</label>
+                        <input id="target_password" type="password" name="target_password" class="form-control" autocomplete="current-password">
+                    </div>
+                    <div class="connection-field field-t field-file_path field-wide">
+                        <label for="target_file_path">SQLite file path</label>
+                        <input id="target_file_path" name="target_file_path" class="form-control" placeholder="D:\\data\\target.db" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-t field-service_name">
+                        <label for="target_service_name">Service name</label>
+                        <input id="target_service_name" name="target_service_name" class="form-control" placeholder="ORCLPDB1">
+                    </div>
+                    <div class="connection-field field-t field-aws_access_key field-wide">
+                        <label for="target_aws_access_key">AWS access key</label>
+                        <input id="target_aws_access_key" name="target_aws_access_key" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="connection-field field-t field-aws_secret_key field-wide">
+                        <label for="target_aws_secret_key">AWS secret key</label>
+                        <input id="target_aws_secret_key" type="password" name="target_aws_secret_key" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="connection-field field-t field-region">
+                        <label for="target_region">AWS region</label>
+                        <input id="target_region" name="target_region" class="form-control" placeholder="us-east-1">
+                    </div>
+                </div>
+                <p class="connection-hint" id="targetHint">Select a database to see the fields needed to connect.</p>
+            </article>
+        </section>
+
+        <section class="migration-options" aria-label="Migration options">
+            <div class="option-card table-option">
+                <div class="option-heading">
+                    <span class="option-icon"><i class="bi bi-table"></i></span>
+                    <div><h3>Choose data</h3><p>Migrate everything or select one table or collection.</p></div>
+                </div>
+                <div class="table-picker">
+                    <div class="field-block table-field">
+                        <label for="table">Table or collection</label>
+                        <select id="table" name="table" class="form-select">
+                            <option value="">All tables and collections</option>
+                        </select>
+                    </div>
+                    <button type="button" id="loadTables" class="btn btn-load-tables"><i class="bi bi-arrow-repeat"></i><span>Load list</span></button>
+                </div>
+                <small id="tableLoadStatus" class="inline-status" aria-live="polite">Connect to the source to load its table list.</small>
+            </div>
+
+            <div class="option-card behavior-option">
+                <div class="option-heading">
+                    <span class="option-icon"><i class="bi bi-shield-check"></i></span>
+                    <div><h3>Existing data</h3><p>Choose how to handle records already at the destination.</p></div>
+                </div>
+                <label class="toggle-row" for="skipExisting">
+                    <input class="form-check-input" type="checkbox" name="skip_existing" value="true" id="skipExisting" checked>
+                    <span class="toggle-copy"><strong>Skip records that already exist</strong><small>Only add missing rows. Duplicate rows in the source are preserved.</small></span>
+                </label>
+            </div>
+        </section>
+
+        <details class="advanced-options" id="advancedOptions">
+            <summary><span><i class="bi bi-sliders"></i> Advanced options</span><i class="bi bi-chevron-down advanced-chevron"></i></summary>
+            <div class="advanced-content">
+                <div class="ai-copy"><strong>AI-assisted SQL</strong><span id="aiSupportHint">Optional. Available for supported relational destinations.</span></div>
+                <div class="advanced-fields">
+                    <div class="field-block">
+                        <label for="ai_model">Model</label>
+                        <input id="ai_model" name="ai_model" class="form-control" placeholder="gpt-4o-mini">
+                    </div>
+                    <div class="field-block field-wide">
+                        <label for="ai_ask">Query instruction</label>
+                        <textarea id="ai_ask" name="ai_ask" class="form-control" rows="2" placeholder="Describe the change you want applied to the destination data"></textarea>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <div class="form-actions">
+            <p><i class="bi bi-info-circle"></i> Credentials are used to connect for this migration.</p>
+            <button class="btn btn-migrate" type="submit" id="startMigration">
+                <span>Start migration</span><i class="bi bi-arrow-right"></i>
+            </button>
+        </div>
+
+        <section id="migrationProgress" class="progress-panel" hidden aria-live="polite">
+            <div class="progress-heading">
+                <div><span class="connection-kicker">MIGRATION STATUS</span><strong id="progressStatus">Preparing migration...</strong></div>
+                <span id="progressPercent" class="progress-percent">0%</span>
+            </div>
+            <div class="progress" role="progressbar" aria-label="Migration progress" aria-valuemin="0" aria-valuemax="100">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">0%</div>
+            </div>
+            <small id="progressRows" class="progress-rows"></small>
+            <div id="migrationSummary" class="migration-summary" hidden>
+                <strong>Migration summary</strong>
+                <p id="summaryTables"></p>
+                <p id="summaryRows"></p>
+                <ul id="summaryIssues"></ul>
+            </div>
+        </section>
+    </form>
+</main>
 {% endblock migrate %}
+
+{% block js %}<script src="{{ url_for('static', path='js/migrate.js') }}"></script>{% endblock js %}

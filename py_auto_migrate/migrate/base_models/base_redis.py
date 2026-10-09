@@ -2,7 +2,9 @@ import pandas as pd
 import json
 import redis
 from py_auto_migrate.migrate.base_models.base import BaseModel
-from py_auto_migrate.migrate.utils.type_mapper import infer_data_types
+from py_auto_migrate.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseRedis(BaseModel):
@@ -19,6 +21,7 @@ class BaseRedis(BaseModel):
             conn.ping()
             return conn
         except Exception:
+            logger.exception("Redis connection failed")
             return None
 
 
@@ -40,6 +43,7 @@ class BaseRedis(BaseModel):
             ]
 
         except Exception:
+            logger.exception("Failed to list Redis keys")
             return []
 
 
@@ -65,10 +69,10 @@ class BaseRedis(BaseModel):
                 data = [data]
 
             df = pd.DataFrame(data)
-            df = infer_data_types(df)
             return df
 
-        except :
+        except Exception:
+            logger.exception("Failed to read Redis key '%s'", table_name)
             return pd.DataFrame()
 
         finally:

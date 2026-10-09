@@ -233,12 +233,19 @@
 
 							<h2 class="docs-title">Migrate Entire Database</h2>
 
+							<p class="text-secondary mb-3">
+								Use <code>--pgbar</code> to show row-level progress in the terminal and
+								<code>--skip-existing</code> to avoid copying rows already present at the destination.
+							</p>
+
 							<div class="code-block">
 								<button class="copy-btn">Copy</button>
 
 								<pre><code>py-auto-migrate migrate \
     --source mongodb://user:pass@localhost:27017/source_db \
-    --target mysql://user:pass@localhost:3306/target_db</code></pre>
+    --target mysql://user:pass@localhost:3306/target_db \
+    --pgbar \
+    --skip-existing</code></pre>
 
 							</div>
 
